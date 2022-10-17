@@ -58,6 +58,12 @@ message(STATUS "USE_TEST = ${USE_TEST}")
 message(STATUS "USE_PYTHON = ${USE_PYTHON}")
 message(STATUS "OPT_FLAGS = ${OPT_FLAGS}")
 
+
+##### set language #####
+if (USE_GPU)
+	enable_language(CUDA)
+endif()
+
 ##### configure include files #####
 file(GLOB_RECURSE header_files ${CMAKE_CURRENT_SOURCE_DIR}/src/*.hpp  ${CMAKE_CURRENT_SOURCE_DIR}/src/*.h)
 foreach(path IN LISTS header_files)
@@ -207,8 +213,8 @@ if(MSYS OR MINGW OR UNIX OR APPLE)
 
 	# Set C++ standard
 	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c11")
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
-	set(PYBIND11_CPP_STANDARD -std=c++14)
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17")
+	set(PYBIND11_CPP_STANDARD -std=c++17)
 
 	# Enable pthread
 	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -pthread")

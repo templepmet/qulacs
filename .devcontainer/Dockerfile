@@ -1,31 +1,48 @@
-# See here for image contents: https://github.com/microsoft/vscode-dev-containers/blob/main/containers/python-3/.devcontainer/base.Dockerfile
-
-# Pick a Python version: 3, 3.10, 3.9, 3.8, 3.7, 3.6
-# Append -bullseye or -buster to pin to an OS version.
-# Use -bullseye variants on local on arm64/Apple Silicon.
-FROM mcr.microsoft.com/vscode/devcontainers/python:0-3.9-bullseye
+FROM nvcr.io/nvidia/nvhpc:22.7-devel-cuda11.7-ubuntu22.04
 
 ENV DEBIAN_FRONTEND=noninteractive
 
-ENV PWD="/workspaces/qulacs"
-ENV QULACS_PACKAGE="qulacs"
-ENV QULACS_VERSION="0.5.1"
-ENV USE_TEST="Yes"
-# Add build artifact to PYTHONPATH and python can find qulacs.
-# Egg file name might vary depending on qulacs and python version.
-ENV PYTHONPATH="${PWD}/dist/${QULACS_PACKAGE}-${QULACS_VERSION}-cp39-cp39-linux_x86_64.whl:${PYTHONPATH}"
-ENV PYTHONPATH="${PWD}/build/lib.linux-x86_64-3.9:${PYTHONPATH}"
+# Create non-root user
+RUN apt-get update && apt-get install -y sudo
+ARG USERNAME
+ARG UID
+ARG GID
+RUN groupadd --gid $GID $USERNAME \
+	&& useradd --uid $UID --gid $GID -m $USERNAME -s /bin/bash \
+	&& echo "$USERNAME ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/$USERNAME \
+	&& chmod 0440 /etc/sudoers.d/$USERNAME
 
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends \
-    clang-format \
-    gdb \
-    cmake \
-    libboost-dev \
-    && apt-get autoremove -y && apt-get clean -y && rm -rf /var/lib/apt/lists/*
+	&& apt-get install -y --no-install-recommends \
+	ca-certificates \
+	less \
+	libbz2-dev \
+	libncurses-dev \
+	libffi-dev \
+	libreadline-dev \
+	libssl-dev \
+	libgsl-dev \
+	libltdl-dev \
+	libboost-dev
+ENV CC=gcc
+ENV CXX=g++
+ENV LD_LIBRARY_PATH=/lib/x86_64-linux-gnu:$LD_LIBRARY_PATH
 
-RUN pip install -U pip \
-    && pip install black flake8 mypy openfermion pybind11-stubgen
+# Install pyenv
+ENV PYTHON_VERSION=3.9.12
+ENV PYENV_ROOT=/opt/pyenv
+ENV PATH=${PYENV_ROOT}/shims:${PYENV_ROOT}/bin:${PATH}
+RUN git clone https://github.com/pyenv/pyenv.git ${PYENV_ROOT} \
+	&& pyenv install -v ${PYTHON_VERSION} \
+	&& pyenv global ${PYTHON_VERSION} \
+	&& pyenv rehash
+RUN chown $USERNAME $PYENV_ROOT/shims
+
+# Install poetry
+ENV POETRY_HOME="/opt/poetry"
+RUN mkdir ${POETRY_HOME}
+RUN chown $USERNAME ${POETRY_HOME}
+RUN curl -sSL https://install.python-poetry.org | POETRY_HOME=${POETRY_HOME} python -
 
 # Install cereal
 RUN git clone https://github.com/USCiLab/cereal.git -b v1.3.0 --depth 1 /tmp/cereal \
@@ -53,3 +70,14 @@ RUN git clone https://github.com/linux-test-project/lcov.git -b v1.15 --depth 1 
     && make install \
     && cd - \
     && rm -rf /tmp/lcov
+
+# Settings qulacs
+ENV QULACS_DIR="/workspace/qulacs"
+ENV QULACS_PACKAGE="qulacs"
+ENV QULACS_VERSION="0.5.1"
+ENV USE_GPU="Yes"
+ENV PYTHONPATH="${QULACS_DIR}/dist/${QULACS_PACKAGE}-${QULACS_VERSION}-cp39-cp39-linux_x86_64.whl:${PYTHONPATH}"
+ENV PYTHONPATH="${QULACS_DIR}/build/lib.linux-x86_64-3.9:${PYTHONPATH}"
+
+# Change non-root user
+USER ${USERNAME}
