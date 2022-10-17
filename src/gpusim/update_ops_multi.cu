@@ -116,10 +116,13 @@ __host__ void penta_qubit_dense_matrix_gate_host(
     penta_qubit_dense_matrix_gate_gpu<<<grid, block, 0, *cuda_stream>>>(
         state_gpu, dim);
 
-    checkCudaErrors(cudaStreamSynchronize(*cuda_stream), __FILE__, __LINE__);
-    cudaStatus = cudaGetLastError();
-    checkCudaErrors(cudaStatus, __FILE__, __LINE__);
-    state = reinterpret_cast<void*>(state_gpu);
+    if (is_synchronize) {
+        checkCudaErrors(
+            cudaStreamSynchronize(*cuda_stream), __FILE__, __LINE__);
+        cudaStatus = cudaGetLastError();
+        checkCudaErrors(cudaStatus, __FILE__, __LINE__);
+        state = reinterpret_cast<void*>(state_gpu);
+    }
 }
 
 __global__ void quad_qubit_dense_matrix_gate_shared_gpu(
@@ -253,10 +256,13 @@ __host__ void quad_qubit_dense_matrix_gate_host(
         target3_qubit_index, sort_list[0], sort_list[1], sort_list[2],
         sort_list[3], state_gpu, dim);
 
-    checkCudaErrors(cudaStreamSynchronize(*cuda_stream), __FILE__, __LINE__);
-    cudaStatus = cudaGetLastError();
-    checkCudaErrors(cudaStatus, __FILE__, __LINE__);
-    state = reinterpret_cast<void*>(state_gpu);
+    if (is_synchronize) {
+        checkCudaErrors(
+            cudaStreamSynchronize(*cuda_stream), __FILE__, __LINE__);
+        cudaStatus = cudaGetLastError();
+        checkCudaErrors(cudaStatus, __FILE__, __LINE__);
+        state = reinterpret_cast<void*>(state_gpu);
+    }
 
     /*
     dim3 block;
@@ -365,10 +371,13 @@ __host__ void triple_qubit_dense_matrix_gate_host(
         target0_qubit_index, target1_qubit_index, target2_qubit_index, small,
         mid, large, state_gpu, dim);
 
-    checkCudaErrors(cudaStreamSynchronize(*cuda_stream), __FILE__, __LINE__);
-    cudaStatus = cudaGetLastError();
-    checkCudaErrors(cudaStatus, __FILE__, __LINE__);
-    state = reinterpret_cast<void*>(state_gpu);
+    if (is_synchronize) {
+        checkCudaErrors(
+            cudaStreamSynchronize(*cuda_stream), __FILE__, __LINE__);
+        cudaStatus = cudaGetLastError();
+        checkCudaErrors(cudaStatus, __FILE__, __LINE__);
+        state = reinterpret_cast<void*>(state_gpu);
+    }
 }
 
 // target1 qubit index > target0 qubit index
@@ -448,10 +457,13 @@ __host__ void double_qubit_dense_matrix_gate_host(
     double_qubit_dense_matrix_gate_gpu<<<grid, block, 0, *cuda_stream>>>(
         target0_qubit_index, target1_qubit_index, small, large, state_gpu, dim);
 
-    checkCudaErrors(cudaStreamSynchronize(*cuda_stream), __FILE__, __LINE__);
-    cudaStatus = cudaGetLastError();
-    checkCudaErrors(cudaStatus, __FILE__, __LINE__);
-    state = reinterpret_cast<void*>(state_gpu);
+    if (is_synchronize) {
+        checkCudaErrors(
+            cudaStreamSynchronize(*cuda_stream), __FILE__, __LINE__);
+        cudaStatus = cudaGetLastError();
+        checkCudaErrors(cudaStatus, __FILE__, __LINE__);
+        state = reinterpret_cast<void*>(state_gpu);
+    }
 }
 
 // multi_qubit_PauliZ_gate
@@ -491,10 +503,14 @@ __host__ void multi_qubit_Pauli_gate_Z_mask_host(ITYPE phase_flip_mask,
 
     multi_qubit_Pauli_gate_Z_mask_gpu<<<grid, block, 0, *cuda_stream>>>(
         phase_flip_mask, state_gpu, dim);
-    checkCudaErrors(cudaStreamSynchronize(*cuda_stream), __FILE__, __LINE__);
-    cudaStatus = cudaGetLastError();
-    checkCudaErrors(cudaStatus, __FILE__, __LINE__);
-    state = reinterpret_cast<void*>(state_gpu);
+
+    if (is_synchronize) {
+        checkCudaErrors(
+            cudaStreamSynchronize(*cuda_stream), __FILE__, __LINE__);
+        cudaStatus = cudaGetLastError();
+        checkCudaErrors(cudaStatus, __FILE__, __LINE__);
+        state = reinterpret_cast<void*>(state_gpu);
+    }
 }
 
 __device__ void multi_qubit_Pauli_gate_XZ_mask_device(ITYPE bit_flip_mask,
@@ -556,10 +572,13 @@ __host__ void multi_qubit_Pauli_gate_XZ_mask_host(ITYPE bit_flip_mask,
         bit_flip_mask, phase_flip_mask, global_phase_90rot_count,
         pivot_qubit_index, state_gpu, dim);
 
-    checkCudaErrors(cudaStreamSynchronize(*cuda_stream), __FILE__, __LINE__);
-    cudaStatus = cudaGetLastError();
-    checkCudaErrors(cudaStatus, __FILE__, __LINE__);
-    state = reinterpret_cast<void*>(state_gpu);
+    if (is_synchronize) {
+        checkCudaErrors(
+            cudaStreamSynchronize(*cuda_stream), __FILE__, __LINE__);
+        cudaStatus = cudaGetLastError();
+        checkCudaErrors(cudaStatus, __FILE__, __LINE__);
+        state = reinterpret_cast<void*>(state_gpu);
+    }
 }
 
 __device__ void multi_qubit_Pauli_rotation_gate_XZ_mask_device(
@@ -639,10 +658,13 @@ __host__ void multi_qubit_Pauli_rotation_gate_XZ_mask_host(ITYPE bit_flip_mask,
         *cuda_stream>>>(bit_flip_mask, phase_flip_mask,
         global_phase_90rot_count, pivot_qubit_index, angle, state_gpu, dim);
 
-    checkCudaErrors(cudaStreamSynchronize(*cuda_stream), __FILE__, __LINE__);
-    cudaStatus = cudaGetLastError();
-    checkCudaErrors(cudaStatus, __FILE__, __LINE__);
-    state = reinterpret_cast<void*>(state_gpu);
+    if (is_synchronize) {
+        checkCudaErrors(
+            cudaStreamSynchronize(*cuda_stream), __FILE__, __LINE__);
+        cudaStatus = cudaGetLastError();
+        checkCudaErrors(cudaStatus, __FILE__, __LINE__);
+        state = reinterpret_cast<void*>(state_gpu);
+    }
 }
 
 __device__ void multi_qubit_Pauli_rotation_gate_Z_mask_device(
@@ -685,10 +707,13 @@ __host__ void multi_qubit_Pauli_rotation_gate_Z_mask_host(ITYPE phase_flip_mask,
     multi_qubit_Pauli_rotation_gate_Z_mask_gpu<<<grid, block, 0,
         *cuda_stream>>>(phase_flip_mask, angle, state_gpu, dim);
 
-    checkCudaErrors(cudaStreamSynchronize(*cuda_stream), __FILE__, __LINE__);
-    cudaStatus = cudaGetLastError();
-    checkCudaErrors(cudaStatus, __FILE__, __LINE__);
-    state = reinterpret_cast<void*>(state_gpu);
+    if (is_synchronize) {
+        checkCudaErrors(
+            cudaStreamSynchronize(*cuda_stream), __FILE__, __LINE__);
+        cudaStatus = cudaGetLastError();
+        checkCudaErrors(cudaStatus, __FILE__, __LINE__);
+        state = reinterpret_cast<void*>(state_gpu);
+    }
 }
 
 __host__ void multi_qubit_Pauli_gate_partial_list_host(
@@ -709,7 +734,7 @@ __host__ void multi_qubit_Pauli_gate_partial_list_host(
     } else {
         multi_qubit_Pauli_gate_XZ_mask_host(bit_flip_mask, phase_flip_mask,
             global_phase_90rot_count, pivot_qubit_index, state, dim, stream,
-            device_number);
+            device_number, is_synchronize);
     }
 }
 
@@ -733,7 +758,7 @@ __host__ void multi_qubit_Pauli_gate_whole_list_host(
     } else {
         multi_qubit_Pauli_gate_XZ_mask_host(bit_flip_mask, phase_flip_mask,
             global_phase_90rot_count, pivot_qubit_index, state, dim, stream,
-            device_number);
+            device_number, is_synchronize);
     }
 }
 
@@ -1030,15 +1055,15 @@ __host__ void multi_qubit_dense_matrix_gate_small_qubit_host(
             *cuda_stream>>>(
             target_qubit_index_count, matrix_gpu, state_gpu, dim);
     }
+    assert(is_synchronize);  // but possible async: cudaFreeAsync from CUDA 11.2
+                             // or reuse buffer
     checkCudaErrors(cudaStreamSynchronize(*cuda_stream), __FILE__, __LINE__);
-
     // Check for any errors launching the kernel
     cudaStatus = cudaGetLastError();
     checkCudaErrors(cudaStatus, __FILE__, __LINE__);
 
     if (target_qubit_index_count > 5) cudaFree(matrix_gpu);
     free((UINT*)h_sorted_insert_index_list);
-
     state = reinterpret_cast<void*>(state_gpu);
 }
 
@@ -1090,10 +1115,12 @@ __host__ void multi_qubit_dense_matrix_gate_11qubit_host(
     multi_qubit_dense_matrix_gate_half_shared_gpu<<<grid, block, 0,
         *cuda_stream>>>(target_qubit_index_count, matrix_gpu, state_gpu, dim);
 
+    assert(is_synchronize);  // but possible async: cudaFreeAsync from CUDA 11.2
+                             // or reuse buffer
     checkCudaErrors(cudaStreamSynchronize(*cuda_stream), __FILE__, __LINE__);
     checkCudaErrors(cudaGetLastError(), __FILE__, __LINE__);
-    checkCudaErrors(cudaFree(matrix_gpu), __FILE__, __LINE__);
 
+    checkCudaErrors(cudaFree(matrix_gpu), __FILE__, __LINE__);
     free((UINT*)h_sorted_insert_index_list);
     state = reinterpret_cast<void*>(state_gpu);
 }
@@ -1159,6 +1186,8 @@ __host__ void multi_qubit_dense_matrix_gate_more_than_11qubit_host(
     multi_qubit_dense_matrix_gate_gpu<<<grid, block, 0, *cuda_stream>>>(
         target_qubit_index_count, matrix_gpu, state_gpu, state_gpu_copy, dim);
 
+    assert(is_synchronize);  // but possible async: cudaFreeAsync from CUDA 11.2
+                             // or reuse buffer
     checkCudaErrors(cudaStreamSynchronize(*cuda_stream), __FILE__, __LINE__);
     checkCudaErrors(cudaGetLastError(), __FILE__, __LINE__);
 
@@ -1377,6 +1406,8 @@ __host__ void single_qubit_control_multi_qubit_dense_matrix_gate_host(
         assert(0);
     }
 
+    assert(is_synchronize);  // but possible async: cudaFreeAsync from CUDA 11.2
+                             // or reuse buffer
     checkCudaErrors(cudaStreamSynchronize(*cuda_stream), __FILE__, __LINE__);
 
     // Check for any errors launching the kernel
@@ -1578,6 +1609,8 @@ __host__ void multi_qubit_control_multi_qubit_dense_matrix_gate_host(
         assert(0);
     }
 
+    assert(is_synchronize);  // but possible async: cudaFreeAsync from CUDA 11.2
+                             // or reuse buffer
     checkCudaErrors(cudaStreamSynchronize(*cuda_stream), __FILE__, __LINE__);
 
     // Check for any errors launching the kernel
@@ -1632,9 +1665,12 @@ __host__ void multi_qubit_diagonal_matrix_gate_with_constant_memory_host(
     multi_qubit_diagonal_matrix_gate_gpu<<<grid, block, 0, *cuda_stream>>>(
         state_gpu, dim);
 
-    checkCudaErrors(cudaStreamSynchronize(*cuda_stream), __FILE__, __LINE__);
-    checkCudaErrors(cudaGetLastError(), __FILE__, __LINE__);
-    state = reinterpret_cast<void*>(state_gpu);
+    if (is_synchronize) {
+        checkCudaErrors(
+            cudaStreamSynchronize(*cuda_stream), __FILE__, __LINE__);
+        checkCudaErrors(cudaGetLastError(), __FILE__, __LINE__);
+        state = reinterpret_cast<void*>(state_gpu);
+    }
 }
 
 __host__ void multi_qubit_diagonal_matrix_gate_with_global_memory_host(
@@ -1659,6 +1695,8 @@ __host__ void multi_qubit_diagonal_matrix_gate_with_global_memory_host(
     multi_qubit_diagonal_matrix_gate_gpu<<<grid, block, 0, *cuda_stream>>>(
         d_matrix, state_gpu, dim);
 
+    assert(is_synchronize);  // but possible async: cudaFreeAsync from CUDA 11.2
+                             // or reuse buffer
     checkCudaErrors(cudaStreamSynchronize(*cuda_stream), __FILE__, __LINE__);
     checkCudaErrors(cudaGetLastError(), __FILE__, __LINE__);
     cudaFree(d_matrix);
