@@ -17,18 +17,21 @@ __constant__ UINT insert_index_list_gpu[30];
 
 __host__ void single_qubit_Pauli_gate_host(UINT target_qubit_index,
     UINT Pauli_operator_type, void* state, ITYPE dim, void* stream,
-    unsigned int device_number) {
+    unsigned int device_number, bool is_synchronize = true) {
     switch (Pauli_operator_type) {
         case 0:
             break;
         case 1:
-            X_gate_host(target_qubit_index, state, dim, stream, device_number);
+            X_gate_host(target_qubit_index, state, dim, stream, device_number,
+                is_synchronize);
             break;
         case 2:
-            Y_gate_host(target_qubit_index, state, dim, stream, device_number);
+            Y_gate_host(target_qubit_index, state, dim, stream, device_number,
+                is_synchronize);
             break;
         case 3:
-            Z_gate_host(target_qubit_index, state, dim, stream, device_number);
+            Z_gate_host(target_qubit_index, state, dim, stream, device_number,
+                is_synchronize);
             break;
         default:
             fprintf(stderr, "invalid Pauli operation is called");
@@ -38,7 +41,8 @@ __host__ void single_qubit_Pauli_gate_host(UINT target_qubit_index,
 
 __host__ void single_qubit_Pauli_rotation_gate_host(
     unsigned int target_qubit_index, unsigned int op_idx, double angle,
-    void* state, ITYPE dim, void* stream, unsigned int device_number) {
+    void* state, ITYPE dim, void* stream, unsigned int device_number,
+    bool is_synchronize = true) {
     GTYPE* state_gpu = reinterpret_cast<GTYPE*>(state);
     CPPCTYPE PAULI_MATRIX[4][4] = {
         {CPPCTYPE(1, 0), CPPCTYPE(0, 0), CPPCTYPE(0, 0), CPPCTYPE(1, 0)},
@@ -61,7 +65,7 @@ __host__ void single_qubit_Pauli_rotation_gate_host(
         sin(angle / 2) * PAULI_MATRIX[op_idx][3].real());
 
     single_qubit_dense_matrix_gate_host(target_qubit_index, rotation_gate,
-        state_gpu, dim, stream, device_number);
+        state_gpu, dim, stream, device_number, is_synchronize);
     state = reinterpret_cast<void*>(state_gpu);
 }
 
@@ -109,7 +113,8 @@ __global__ void single_qubit_dense_matrix_gate_gpu(GTYPE mat0, GTYPE mat1,
 
 __host__ void single_qubit_dense_matrix_gate_host(
     unsigned int target_qubit_index, const CPPCTYPE matrix[4], void* state,
-    ITYPE dim, void* stream, unsigned int device_number) {
+    ITYPE dim, void* stream, unsigned int device_number,
+    bool is_synchronize = true) {
     int current_device = get_current_device();
     if (device_number != current_device) cudaSetDevice(device_number);
 
@@ -151,7 +156,8 @@ __global__ void single_qubit_diagonal_matrix_gate_gpu(
 
 __host__ void single_qubit_diagonal_matrix_gate_host(
     unsigned int target_qubit_index, const CPPCTYPE diagonal_matrix[2],
-    void* state, ITYPE dim, void* stream, unsigned int device_number) {
+    void* state, ITYPE dim, void* stream, unsigned int device_number,
+    bool is_synchronize = true) {
     int current_device = get_current_device();
     if (device_number != current_device) cudaSetDevice(device_number);
 
@@ -224,7 +230,8 @@ __global__ void single_qubit_control_single_qubit_dense_matrix_gate_gpu(
 __host__ void single_qubit_control_single_qubit_dense_matrix_gate_host(
     unsigned int control_qubit_index, unsigned int control_value,
     unsigned int target_qubit_index, const CPPCTYPE matrix[4], void* state,
-    ITYPE dim, void* stream, unsigned int device_number) {
+    ITYPE dim, void* stream, unsigned int device_number,
+    bool is_synchronize = true) {
     int current_device = get_current_device();
     if (device_number != current_device) cudaSetDevice(device_number);
 
@@ -278,7 +285,7 @@ __global__ void single_qubit_phase_gate_gpu(
 
 __host__ void single_qubit_phase_gate_host(unsigned int target_qubit_index,
     CPPCTYPE phase, void* state, ITYPE dim, void* stream,
-    unsigned int device_number) {
+    unsigned int device_number, bool is_synchronize = true) {
     int current_device = get_current_device();
     if (device_number != current_device) cudaSetDevice(device_number);
 
@@ -344,7 +351,7 @@ __host__ void multi_qubit_control_single_qubit_dense_matrix_gate_host(
     const UINT* control_qubit_index_list, const UINT* control_value_list,
     UINT control_qubit_index_count, UINT target_qubit_index,
     const CPPCTYPE matrix[4], void* state, ITYPE dim, void* stream,
-    unsigned int device_number) {
+    unsigned int device_number, bool is_synchronize = true) {
     int current_device = get_current_device();
     if (device_number != current_device) cudaSetDevice(device_number);
 

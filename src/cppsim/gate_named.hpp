@@ -11,7 +11,7 @@
 class QuantumGate_OneQubit : public QuantumGateBase {
 protected:
     typedef void(T_UPDATE_FUNC)(UINT, CTYPE*, ITYPE);
-    typedef void(T_GPU_UPDATE_FUNC)(UINT, void*, ITYPE, void*, UINT);
+    typedef void(T_GPU_UPDATE_FUNC)(UINT, void*, ITYPE, void*, UINT, bool);
     T_UPDATE_FUNC* _update_func;
     T_UPDATE_FUNC* _update_func_dm;
     T_GPU_UPDATE_FUNC* _update_func_gpu;
@@ -31,7 +31,7 @@ public:
             if (state->get_device_name() == "gpu") {
                 _update_func_gpu(this->target_qubit_list[0].index(),
                     state->data(), state->dim, state->get_cuda_stream(),
-                    state->device_number);
+                    state->device_number, true);
             } else {
                 _update_func(this->_target_qubit_list[0].index(),
                     state->data_c(), state->dim);
@@ -55,7 +55,8 @@ public:
     virtual void update_quantum_state_async(QuantumStateGpu* state) override {
         if (state->is_state_vector()) {
             _update_func_gpu(this->target_qubit_list[0].index(), state->data(),
-                state->dim, state->get_cuda_stream(), state->device_number);
+                state->dim, state->get_cuda_stream(), state->device_number,
+                false);
         } else {
             throw NotImplementedException(
                 "QuantumGate_OneQubit::update_quantum_state_async for "
@@ -88,7 +89,8 @@ public:
 class QuantumGate_TwoQubit : public QuantumGateBase {
 protected:
     typedef void(T_UPDATE_FUNC)(UINT, UINT, CTYPE*, ITYPE);
-    typedef void(T_GPU_UPDATE_FUNC)(UINT, UINT, void*, ITYPE, void*, UINT);
+    typedef void(T_GPU_UPDATE_FUNC)(
+        UINT, UINT, void*, ITYPE, void*, UINT, bool);
     T_UPDATE_FUNC* _update_func;
     T_UPDATE_FUNC* _update_func_dm;
     T_GPU_UPDATE_FUNC* _update_func_gpu;
@@ -108,7 +110,8 @@ public:
             if (state->get_device_name() == "gpu") {
                 _update_func_gpu(this->_target_qubit_list[0].index(),
                     this->_target_qubit_list[1].index(), state->data(),
-                    state->dim, state->get_cuda_stream(), state->device_number);
+                    state->dim, state->get_cuda_stream(), state->device_number,
+                    true);
             } else {
                 _update_func(this->_target_qubit_list[0].index(),
                     this->_target_qubit_list[1].index(), state->data_c(),
@@ -136,7 +139,7 @@ public:
         if (state->is_state_vector()) {
             _update_func_gpu(this->_target_qubit_list[0].index(),
                 this->_target_qubit_list[1].index(), state->data(), state->dim,
-                state->get_cuda_stream(), state->device_number);
+                state->get_cuda_stream(), state->device_number, false);
         } else {
             throw NotImplementedException(
                 "QuantumGate_TwoQubit::update_quantum_state_async for "
@@ -170,7 +173,8 @@ public:
 class QuantumGate_OneControlOneTarget : public QuantumGateBase {
 protected:
     typedef void(T_UPDATE_FUNC)(UINT, UINT, CTYPE*, ITYPE);
-    typedef void(T_GPU_UPDATE_FUNC)(UINT, UINT, void*, ITYPE, void*, UINT);
+    typedef void(T_GPU_UPDATE_FUNC)(
+        UINT, UINT, void*, ITYPE, void*, UINT, bool);
     T_UPDATE_FUNC* _update_func;
     T_UPDATE_FUNC* _update_func_dm;
     T_GPU_UPDATE_FUNC* _update_func_gpu;
@@ -190,7 +194,8 @@ public:
             if (state->get_device_name() == "gpu") {
                 _update_func_gpu(this->_control_qubit_list[0].index(),
                     this->_target_qubit_list[0].index(), state->data(),
-                    state->dim, state->get_cuda_stream(), state->device_number);
+                    state->dim, state->get_cuda_stream(), state->device_number,
+                    true);
             } else {
                 _update_func(this->_control_qubit_list[0].index(),
                     this->_target_qubit_list[0].index(), state->data_c(),
@@ -218,7 +223,7 @@ public:
         if (state->is_state_vector()) {
             _update_func_gpu(this->_control_qubit_list[0].index(),
                 this->_target_qubit_list[0].index(), state->data(), state->dim,
-                state->get_cuda_stream(), state->device_number);
+                state->get_cuda_stream(), state->device_number, false);
         } else {
             throw NotImplementedException(
                 "QuantumGate_OneControlOneTarget::update_quantum_state_async "
@@ -251,7 +256,8 @@ public:
 class QuantumGate_OneQubitRotation : public QuantumGateBase {
 protected:
     typedef void(T_UPDATE_FUNC)(UINT, double, CTYPE*, ITYPE);
-    typedef void(T_GPU_UPDATE_FUNC)(UINT, double, void*, ITYPE, void*, UINT);
+    typedef void(T_GPU_UPDATE_FUNC)(
+        UINT, double, void*, ITYPE, void*, UINT, bool);
     T_UPDATE_FUNC* _update_func;
     T_UPDATE_FUNC* _update_func_dm;
     T_GPU_UPDATE_FUNC* _update_func_gpu;
@@ -272,7 +278,7 @@ public:
             if (state->get_device_name() == "gpu") {
                 _update_func_gpu(this->_target_qubit_list[0].index(), _angle,
                     state->data(), state->dim, state->get_cuda_stream(),
-                    state->device_number);
+                    state->device_number, true);
             } else {
                 _update_func(this->_target_qubit_list[0].index(), _angle,
                     state->data_c(), state->dim);
@@ -297,7 +303,7 @@ public:
         if (state->is_state_vector()) {
             _update_func_gpu(this->_target_qubit_list[0].index(), _angle,
                 state->data(), state->dim, state->get_cuda_stream(),
-                state->device_number);
+                state->device_number, false);
         } else {
             throw NotImplementedException(
                 "QuantumGate_OneQubitRotation::update_quantum_state_async "

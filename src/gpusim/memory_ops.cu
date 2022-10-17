@@ -159,7 +159,7 @@ __host__ void initialize_Haar_random_state_with_seed_host(void* state,
     state = reinterpret_cast<void*>(state_gpu);
 
     norm = state_norm_squared_host(state, dim, cuda_stream, device_number);
-    normalize_host(norm, state, dim, cuda_stream, device_number);
+    normalize_host(norm, state, dim, cuda_stream, device_number, true);
 }
 
 __host__ void initialize_Haar_random_state_host(

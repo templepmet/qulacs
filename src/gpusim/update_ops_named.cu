@@ -46,7 +46,8 @@ __global__ void H_gate_gpu(
 }
 
 __host__ void H_gate_host(unsigned int target_qubit_index, void* state,
-    ITYPE dim, void* stream, unsigned int device_number) {
+    ITYPE dim, void* stream, unsigned int device_number,
+    bool is_synchronize = true) {
     int current_device = get_current_device();
     if (device_number != current_device) cudaSetDevice((int)device_number);
 
@@ -60,9 +61,12 @@ __host__ void H_gate_host(unsigned int target_qubit_index, void* state,
     H_gate_gpu<<<grid, block, 0, *cuda_stream>>>(
         target_qubit_index, state_gpu, dim);
 
-    checkCudaErrors(cudaStreamSynchronize(*cuda_stream), __FILE__, __LINE__);
-    cudaStatus = cudaGetLastError();
-    checkCudaErrors(cudaStatus, __FILE__, __LINE__);
+    if (is_synchronize) {
+        checkCudaErrors(
+            cudaStreamSynchronize(*cuda_stream), __FILE__, __LINE__);
+        cudaStatus = cudaGetLastError();
+        checkCudaErrors(cudaStatus, __FILE__, __LINE__);
+    }
     state = reinterpret_cast<void*>(state_gpu);
 }
 
@@ -87,7 +91,7 @@ __global__ void X_gate_gpu(
 }
 
 __host__ void X_gate_host(unsigned int target_qubit_index, void* state,
-    ITYPE dim, void* stream, unsigned int device_number) {
+    ITYPE dim, void* stream, unsigned int device_number, bool is_synchronize) {
     int current_device = get_current_device();
     if (device_number != current_device) cudaSetDevice(device_number);
 
@@ -127,7 +131,8 @@ __global__ void Y_gate_gpu(
 }
 
 __host__ void Y_gate_host(unsigned int target_qubit_index, void* state,
-    ITYPE dim, void* stream, unsigned int device_number) {
+    ITYPE dim, void* stream, unsigned int device_number,
+    bool is_synchronize = true) {
     int current_device = get_current_device();
     if (device_number != current_device) cudaSetDevice(device_number);
 
@@ -160,7 +165,8 @@ __global__ void Z_gate_gpu(
 }
 
 __host__ void Z_gate_host(unsigned int target_qubit_index, void* state,
-    ITYPE dim, void* stream, unsigned int device_number) {
+    ITYPE dim, void* stream, unsigned int device_number,
+    bool is_synchronize = true) {
     int current_device = get_current_device();
     if (device_number != current_device) cudaSetDevice(device_number);
 
@@ -203,7 +209,7 @@ __global__ void CZ_gate_gpu(unsigned int large_index, unsigned int small_index,
 
 __host__ void CZ_gate_host(unsigned int control_qubit_index,
     unsigned int target_qubit_index, void* state, ITYPE dim, void* stream,
-    unsigned int device_number) {
+    unsigned int device_number, bool is_synchronize = true) {
     int current_device = get_current_device();
     if (device_number != current_device) cudaSetDevice(device_number);
 
@@ -271,7 +277,7 @@ __global__ void CNOT_gate_gpu(unsigned int control_qubit_index,
 
 __host__ void CNOT_gate_host(unsigned int control_qubit_index,
     unsigned int target_qubit_index, void* state, ITYPE dim, void* stream,
-    unsigned int device_number) {
+    unsigned int device_number, bool is_synchronize = true) {
     int current_device = get_current_device();
     if (device_number != current_device) cudaSetDevice(device_number);
 
@@ -320,7 +326,7 @@ __global__ void SWAP_gate_gpu(unsigned int target_qubit_index0,
 
 __host__ void SWAP_gate_host(unsigned int target_qubit_index0,
     unsigned int target_qubit_index1, void* state, ITYPE dim, void* stream,
-    unsigned int device_number) {
+    unsigned int device_number, bool is_synchronize = true) {
     int current_device = get_current_device();
     if (device_number != current_device) cudaSetDevice(device_number);
 
@@ -364,7 +370,7 @@ __global__ void P0_gate_gpu(
 }
 
 __host__ void P0_gate_host(UINT target_qubit_index, void* state, ITYPE dim,
-    void* stream, unsigned int device_number) {
+    void* stream, unsigned int device_number, bool is_synchronize = true) {
     int current_device = get_current_device();
     if (device_number != current_device) cudaSetDevice(device_number);
 
@@ -398,7 +404,7 @@ __global__ void P1_gate_gpu(
 }
 
 __host__ void P1_gate_host(UINT target_qubit_index, void* state, ITYPE dim,
-    void* stream, unsigned int device_number) {
+    void* stream, unsigned int device_number, bool is_synchronize = true) {
     int current_device = get_current_device();
     if (device_number != current_device) cudaSetDevice(device_number);
 
@@ -432,7 +438,7 @@ __global__ void normalize_gpu(
 }
 
 __host__ void normalize_host(double squared_norm, void* state, ITYPE dim,
-    void* stream, unsigned int device_number) {
+    void* stream, unsigned int device_number, bool is_synchronize = true) {
     int current_device = get_current_device();
     if (device_number != current_device) cudaSetDevice(device_number);
 
@@ -456,95 +462,102 @@ __host__ void normalize_host(double squared_norm, void* state, ITYPE dim,
 }
 
 __host__ void RX_gate_host(UINT target_qubit_index, double angle, void* state,
-    ITYPE dim, void* stream, unsigned int device_number) {
-    single_qubit_Pauli_rotation_gate_host(
-        target_qubit_index, 1, angle, state, dim, stream, device_number);
+    ITYPE dim, void* stream, unsigned int device_number,
+    bool is_synchronize = true) {
+    single_qubit_Pauli_rotation_gate_host(target_qubit_index, 1, angle, state,
+        dim, stream, device_number, is_synchronize);
 }
 
 __host__ void RY_gate_host(UINT target_qubit_index, double angle, void* state,
-    ITYPE dim, void* stream, unsigned int device_number) {
-    single_qubit_Pauli_rotation_gate_host(
-        target_qubit_index, 2, angle, state, dim, stream, device_number);
+    ITYPE dim, void* stream, unsigned int device_number,
+    bool is_synchronize = true) {
+    single_qubit_Pauli_rotation_gate_host(target_qubit_index, 2, angle, state,
+        dim, stream, device_number, is_synchronize);
 }
 
 __host__ void RZ_gate_host(UINT target_qubit_index, double angle, void* state,
-    ITYPE dim, void* stream, unsigned int device_number) {
-    single_qubit_Pauli_rotation_gate_host(
-        target_qubit_index, 3, angle, state, dim, stream, device_number);
+    ITYPE dim, void* stream, unsigned int device_number,
+    bool is_synchronize = true) {
+    single_qubit_Pauli_rotation_gate_host(target_qubit_index, 3, angle, state,
+        dim, stream, device_number, is_synchronize);
 }
 
 // [[1,0],[0,i]]
 __host__ void S_gate_host(UINT target_qubit_index, void* state, ITYPE dim,
-    void* stream, unsigned int device_number) {
+    void* stream, unsigned int device_number, bool is_synchronize = true) {
     CPPCTYPE diagonal_matrix[2];
     diagonal_matrix[0] = CPPCTYPE(1.0, 0.0);
     diagonal_matrix[1] = CPPCTYPE(0.0, 1.0);
-    single_qubit_diagonal_matrix_gate_host(
-        target_qubit_index, diagonal_matrix, state, dim, stream, device_number);
+    single_qubit_diagonal_matrix_gate_host(target_qubit_index, diagonal_matrix,
+        state, dim, stream, device_number, is_synchronize);
 }
 
 // [[1,0],[0,-i]]
 __host__ void Sdag_gate_host(UINT target_qubit_index, void* state, ITYPE dim,
-    void* stream, unsigned int device_number) {
+    void* stream, unsigned int device_number, bool is_synchronize = true) {
     CPPCTYPE diagonal_matrix[2];
     diagonal_matrix[0] = CPPCTYPE(1.0, 0.0);
     diagonal_matrix[1] = CPPCTYPE(0.0, -1.0);
-    single_qubit_diagonal_matrix_gate_host(
-        target_qubit_index, diagonal_matrix, state, dim, stream, device_number);
+    single_qubit_diagonal_matrix_gate_host(target_qubit_index, diagonal_matrix,
+        state, dim, stream, device_number, is_synchronize);
 }
 
 // [[1,0],[0,exp(i*pi/4)]] , (1+i)/sprt(2)
 __host__ void T_gate_host(UINT target_qubit_index, void* state, ITYPE dim,
-    void* stream, unsigned int device_number) {
+    void* stream, unsigned int device_number, bool is_synchronize = true) {
     CPPCTYPE diagonal_matrix[2];
     diagonal_matrix[0] = CPPCTYPE(1.0, 0.0);
     diagonal_matrix[1] = CPPCTYPE(1.0 / sqrt(2), 1.0 / sqrt(2));
-    single_qubit_diagonal_matrix_gate_host(
-        target_qubit_index, diagonal_matrix, state, dim, stream, device_number);
+    single_qubit_diagonal_matrix_gate_host(target_qubit_index, diagonal_matrix,
+        state, dim, stream, device_number, is_synchronize);
 }
 
 // [[1,0],[0,-exp(i*pi/4)]], (1-i)/sqrt(2)
 __host__ void Tdag_gate_host(UINT target_qubit_index, void* state, ITYPE dim,
-    void* stream, unsigned int device_number) {
+    void* stream, unsigned int device_number, bool is_synchronize = true) {
     CPPCTYPE diagonal_matrix[2];
     diagonal_matrix[0] = CPPCTYPE(1.0, 0.0);
     diagonal_matrix[1] = CPPCTYPE(1.0 / sqrt(2), -1.0 / sqrt(2));
-    single_qubit_diagonal_matrix_gate_host(
-        target_qubit_index, diagonal_matrix, state, dim, stream, device_number);
+    single_qubit_diagonal_matrix_gate_host(target_qubit_index, diagonal_matrix,
+        state, dim, stream, device_number, is_synchronize);
 }
 
 __host__ void sqrtX_gate_host(UINT target_qubit_index, void* state, ITYPE dim,
-    void* stream, unsigned int device_number) {
+    void* stream, unsigned int device_number, bool is_synchronize = true) {
     CPPCTYPE SQRT_X_GATE_MATRIX[4] = {std::complex<double>(0.5, 0.5),
         std::complex<double>(0.5, -0.5), std::complex<double>(0.5, -0.5),
         std::complex<double>(0.5, 0.5)};
     single_qubit_dense_matrix_gate_host(target_qubit_index, SQRT_X_GATE_MATRIX,
-        state, dim, stream, device_number);
+        state, dim, stream, device_number, is_synchronize);
 }
 
 __host__ void sqrtXdag_gate_host(UINT target_qubit_index, void* state,
-    ITYPE dim, void* stream, unsigned int device_number) {
+    ITYPE dim, void* stream, unsigned int device_number,
+    bool is_synchronize = true) {
     CPPCTYPE SQRT_X_DAG_GATE_MATRIX[4] = {std::complex<double>(0.5, -0.5),
         std::complex<double>(0.5, 0.5), std::complex<double>(0.5, 0.5),
         std::complex<double>(0.5, -0.5)};
     single_qubit_dense_matrix_gate_host(target_qubit_index,
-        SQRT_X_DAG_GATE_MATRIX, state, dim, stream, device_number);
+        SQRT_X_DAG_GATE_MATRIX, state, dim, stream, device_number,
+        is_synchronize);
 }
 
 __host__ void sqrtY_gate_host(UINT target_qubit_index, void* state, ITYPE dim,
-    void* stream, unsigned int device_number) {
+    void* stream, unsigned int device_number, bool is_synchronize = true) {
     CPPCTYPE SQRT_Y_GATE_MATRIX[4] = {std::complex<double>(0.5, 0.5),
         std::complex<double>(-0.5, -0.5), std::complex<double>(0.5, 0.5),
         std::complex<double>(0.5, 0.5)};
     single_qubit_dense_matrix_gate_host(target_qubit_index, SQRT_Y_GATE_MATRIX,
-        state, dim, stream, device_number);
+        state, dim, stream, device_number, is_synchronize);
 }
 
 __host__ void sqrtYdag_gate_host(UINT target_qubit_index, void* state,
-    ITYPE dim, void* stream, unsigned int device_number) {
+    ITYPE dim, void* stream, unsigned int device_number,
+    bool is_synchronize = true) {
     CPPCTYPE SQRT_Y_DAG_GATE_MATRIX[4] = {std::complex<double>(0.5, -0.5),
         std::complex<double>(0.5, -0.5), std::complex<double>(-0.5, 0.5),
         std::complex<double>(0.5, -0.5)};
     single_qubit_dense_matrix_gate_host(target_qubit_index,
-        SQRT_Y_DAG_GATE_MATRIX, state, dim, stream, device_number);
+        SQRT_Y_DAG_GATE_MATRIX, state, dim, stream, device_number,
+        is_synchronize);
 }

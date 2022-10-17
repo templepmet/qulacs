@@ -375,7 +375,7 @@ void GeneralQuantumOperator::_apply_pauli_to_state(
             multi_qubit_Pauli_gate_partial_list_host(target_index_list.data(),
                 pauli_id_list.data(), (UINT)target_index_list.size(),
                 state->data(), state->dim, state->get_cuda_stream(),
-                state->device_number);
+                state->device_number, true);
             // _update_func_gpu(this->_target_qubit_list[0].index(), _angle,
             // state->data(), state->dim);
             return;
@@ -402,7 +402,7 @@ void GeneralQuantumOperator::_apply_pauli_to_state_single_thread(
             multi_qubit_Pauli_gate_partial_list_host(target_index_list.data(),
                 pauli_id_list.data(), (UINT)target_index_list.size(),
                 state->data(), state->dim, state->get_cuda_stream(),
-                state->device_number);
+                state->device_number, true);
             // _update_func_gpu(this->_target_qubit_list[0].index(), _angle,
             // state->data(), state->dim);
             return;

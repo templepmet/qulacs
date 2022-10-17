@@ -32,7 +32,8 @@ class QuantumGate_SingleParameterOneQubitRotation
     : public QuantumGate_SingleParameter {
 protected:
     typedef void(T_UPDATE_FUNC)(UINT, double, CTYPE*, ITYPE);
-    typedef void(T_GPU_UPDATE_FUNC)(UINT, double, void*, ITYPE, void*, UINT);
+    typedef void(T_GPU_UPDATE_FUNC)(
+        UINT, double, void*, ITYPE, void*, UINT, bool);
     T_UPDATE_FUNC* _update_func = NULL;
     T_UPDATE_FUNC* _update_func_dm = NULL;
     T_GPU_UPDATE_FUNC* _update_func_gpu = NULL;
@@ -54,7 +55,7 @@ public:
                 }
                 _update_func_gpu(this->_target_qubit_list[0].index(), _angle,
                     state->data(), state->dim, state->get_cuda_stream(),
-                    state->device_number);
+                    state->device_number, true);
                 return;
             }
 #endif
@@ -92,7 +93,7 @@ public:
             }
             _update_func_gpu(this->_target_qubit_list[0].index(), _angle,
                 state->data(), state->dim, state->get_cuda_stream(),
-                state->device_number);
+                state->device_number, false);
         } else {
             throw NotImplementedException(
                 "QuantumGate_SingleParameterOneQubitRotation::update_quantum_"
@@ -204,7 +205,8 @@ public:
                 multi_qubit_Pauli_rotation_gate_partial_list_host(
                     target_index_list.data(), pauli_id_list.data(),
                     (UINT)target_index_list.size(), _angle, state->data(),
-                    state->dim, state->get_cuda_stream(), state->device_number);
+                    state->dim, state->get_cuda_stream(), state->device_number,
+                    true);
             } else {
                 multi_qubit_Pauli_rotation_gate_partial_list(
                     target_index_list.data(), pauli_id_list.data(),
@@ -233,7 +235,8 @@ public:
             multi_qubit_Pauli_rotation_gate_partial_list_host(
                 target_index_list.data(), pauli_id_list.data(),
                 (UINT)target_index_list.size(), _angle, state->data(),
-                state->dim, state->get_cuda_stream(), state->device_number);
+                state->dim, state->get_cuda_stream(), state->device_number,
+                false);
         } else {
             throw NotImplementedException(
                 "ClsParametricPauliRotationGate::update_quantum_"

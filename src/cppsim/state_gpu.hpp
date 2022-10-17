@@ -166,8 +166,8 @@ public:
      * @param norm 自身のノルム
      */
     virtual void normalize(double squared_norm) override {
-        normalize_host(
-            squared_norm, this->data(), _dim, _cuda_stream, device_number);
+        normalize_host(squared_norm, this->data(), _dim, _cuda_stream,
+            device_number, true);
     }
 
     /**
@@ -176,8 +176,8 @@ public:
      * @param norm 自身のノルム
      */
     virtual void normalize_single_thread(double squared_norm) override {
-        normalize_host(
-            squared_norm, this->data(), _dim, _cuda_stream, device_number);
+        normalize_host(squared_norm, this->data(), _dim, _cuda_stream,
+            device_number, true);
     }
 
     /**
@@ -334,7 +334,7 @@ public:
             diagonal_matrix[i] = func(i);
         }
         multi_qubit_diagonal_matrix_gate_host(diagonal_matrix.data(),
-            this->data(), dim, _cuda_stream, device_number);
+            this->data(), dim, _cuda_stream, device_number, true);
     }
 
     /**

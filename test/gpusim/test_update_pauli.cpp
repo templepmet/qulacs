@@ -27,7 +27,7 @@ TEST(UpdateTest, SingleQubitPauliTest) {
             target = rand_int(n);
             pauli = rand_int(4);
             single_qubit_Pauli_gate_host(
-                target, pauli, state, dim, stream_ptr, idx);
+                target, pauli, state, dim, stream_ptr, idx, true);
             test_state = get_expanded_eigen_matrix_with_identity(
                              target, get_eigen_matrix_single_Pauli(pauli), n) *
                          test_state;
@@ -64,7 +64,7 @@ TEST(UpdateTest, SingleQubitPauliRotationTest) {
             pauli = rand_int(3) + 1;
             angle = rand_real();
             single_qubit_Pauli_rotation_gate_host(
-                target, pauli, angle, state, dim, stream_ptr, idx);
+                target, pauli, angle, state, dim, stream_ptr, idx, true);
             test_state = get_expanded_eigen_matrix_with_identity(target,
                              cos(angle / 2) * Identity +
                                  1.i * sin(angle / 2) *
@@ -105,7 +105,7 @@ TEST(UpdateTest, MultiQubitPauliTest) {
                 pauli_whole[i] = rand_int(4);
             }
             multi_qubit_Pauli_gate_whole_list_host(
-                pauli_whole.data(), n, state, dim, stream_ptr, idx);
+                pauli_whole.data(), n, state, dim, stream_ptr, idx, true);
             test_state =
                 get_eigen_matrix_full_qubit_pauli(pauli_whole) * test_state;
             state_equal_gpu(state, test_state, dim, "multi Pauli whole gate",
@@ -130,7 +130,7 @@ TEST(UpdateTest, MultiQubitPauliTest) {
             }
             multi_qubit_Pauli_gate_partial_list_host(pauli_partial_index.data(),
                 pauli_partial.data(), (UINT)pauli_partial.size(), state, dim,
-                stream_ptr, idx);
+                stream_ptr, idx, true);
             test_state =
                 get_eigen_matrix_full_qubit_pauli(pauli_whole) * test_state;
             state_equal_gpu(state, test_state, dim, "multi Pauli partial gate",
@@ -170,8 +170,8 @@ TEST(UpdateTest, MultiQubitPauliRotationTest) {
                 pauli_whole[i] = rand_int(4);
             }
             angle = rand_real();
-            multi_qubit_Pauli_rotation_gate_whole_list_host(
-                pauli_whole.data(), n, angle, state, dim, stream_ptr, idx);
+            multi_qubit_Pauli_rotation_gate_whole_list_host(pauli_whole.data(),
+                n, angle, state, dim, stream_ptr, idx, true);
             test_state =
                 (cos(angle / 2) * whole_I +
                     1.i * sin(angle / 2) *
@@ -200,7 +200,8 @@ TEST(UpdateTest, MultiQubitPauliRotationTest) {
             angle = rand_real();
             multi_qubit_Pauli_rotation_gate_partial_list_host(
                 pauli_partial_index.data(), pauli_partial.data(),
-                (UINT)pauli_partial.size(), angle, state, dim, stream_ptr, idx);
+                (UINT)pauli_partial.size(), angle, state, dim, stream_ptr, idx,
+                true);
             test_state =
                 (cos(angle / 2) * whole_I +
                     1.i * sin(angle / 2) *

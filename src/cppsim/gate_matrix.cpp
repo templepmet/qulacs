@@ -110,7 +110,7 @@ void QuantumGateMatrix::update_quantum_state(QuantumStateBase* state) {
                 if (state->get_device_name() == "gpu") {
                     single_qubit_dense_matrix_gate_host(target_index[0],
                         (const CPPCTYPE*)matrix_ptr, state->data(), dim,
-                        state->get_cuda_stream(), state->device_number);
+                        state->get_cuda_stream(), state->device_number, true);
                 } else {
                     single_qubit_dense_matrix_gate(
                         target_index[0], matrix_ptr, state->data_c(), dim);
@@ -127,7 +127,7 @@ void QuantumGateMatrix::update_quantum_state(QuantumStateBase* state) {
                     single_qubit_control_single_qubit_dense_matrix_gate_host(
                         control_index[0], control_value[0], target_index[0],
                         (const CPPCTYPE*)matrix_ptr, state->data(), dim,
-                        state->get_cuda_stream(), state->device_number);
+                        state->get_cuda_stream(), state->device_number, true);
                 } else {
                     single_qubit_control_single_qubit_dense_matrix_gate(
                         control_index[0], control_value[0], target_index[0],
@@ -151,7 +151,7 @@ void QuantumGateMatrix::update_quantum_state(QuantumStateBase* state) {
                         (UINT)(control_index.size()), target_index.data(),
                         (UINT)(target_index.size()),
                         (const CPPCTYPE*)matrix_ptr, state->data(), dim,
-                        state->get_cuda_stream(), state->device_number);
+                        state->get_cuda_stream(), state->device_number, true);
                     // exit(0);
                     /*
                     multi_qubit_control_single_qubit_dense_matrix_gate_host(
@@ -183,7 +183,7 @@ void QuantumGateMatrix::update_quantum_state(QuantumStateBase* state) {
                     multi_qubit_dense_matrix_gate_host(target_index.data(),
                         (UINT)(target_index.size()),
                         (const CPPCTYPE*)matrix_ptr, state->data(), dim,
-                        state->get_cuda_stream(), state->device_number);
+                        state->get_cuda_stream(), state->device_number, true);
                 } else {
                     multi_qubit_dense_matrix_gate(target_index.data(),
                         (UINT)(target_index.size()), matrix_ptr,
@@ -203,7 +203,7 @@ void QuantumGateMatrix::update_quantum_state(QuantumStateBase* state) {
                         control_index[0], control_value[0], target_index.data(),
                         (UINT)(target_index.size()),
                         (const CPPCTYPE*)matrix_ptr, state->data(), dim,
-                        state->get_cuda_stream(), state->device_number);
+                        state->get_cuda_stream(), state->device_number, true);
                 } else {
                     single_qubit_control_multi_qubit_dense_matrix_gate(
                         control_index[0], control_value[0], target_index.data(),
@@ -226,7 +226,7 @@ void QuantumGateMatrix::update_quantum_state(QuantumStateBase* state) {
                         (UINT)(control_index.size()), target_index.data(),
                         (UINT)(target_index.size()),
                         (const CPPCTYPE*)matrix_ptr, state->data(), dim,
-                        state->get_cuda_stream(), state->device_number);
+                        state->get_cuda_stream(), state->device_number, true);
                 } else {
                     multi_qubit_control_multi_qubit_dense_matrix_gate(
                         control_index.data(), control_value.data(),
@@ -312,14 +312,14 @@ void QuantumGateMatrix::update_quantum_state_async(QuantumStateGpu* state) {
             if (this->_control_qubit_list.size() == 0) {
                 single_qubit_dense_matrix_gate_host(target_index[0],
                     (const CPPCTYPE*)matrix_ptr, state->data(), dim,
-                    state->get_cuda_stream(), state->device_number);
+                    state->get_cuda_stream(), state->device_number, false);
             }
             // single control qubit
             else if (this->_control_qubit_list.size() == 1) {
                 single_qubit_control_single_qubit_dense_matrix_gate_host(
                     control_index[0], control_value[0], target_index[0],
                     (const CPPCTYPE*)matrix_ptr, state->data(), dim,
-                    state->get_cuda_stream(), state->device_number);
+                    state->get_cuda_stream(), state->device_number, false);
             }
             // multiple control qubits
             else {
@@ -328,7 +328,7 @@ void QuantumGateMatrix::update_quantum_state_async(QuantumStateGpu* state) {
                     (UINT)(control_index.size()), target_index.data(),
                     (UINT)(target_index.size()), (const CPPCTYPE*)matrix_ptr,
                     state->data(), dim, state->get_cuda_stream(),
-                    state->device_number);
+                    state->device_number, false);
             }
         }
 
@@ -339,7 +339,7 @@ void QuantumGateMatrix::update_quantum_state_async(QuantumStateGpu* state) {
                 multi_qubit_dense_matrix_gate_host(target_index.data(),
                     (UINT)(target_index.size()), (const CPPCTYPE*)matrix_ptr,
                     state->data(), dim, state->get_cuda_stream(),
-                    state->device_number);
+                    state->device_number, false);
             }
             // single control qubit
             else if (this->_control_qubit_list.size() == 1) {
@@ -347,7 +347,7 @@ void QuantumGateMatrix::update_quantum_state_async(QuantumStateGpu* state) {
                     control_index[0], control_value[0], target_index.data(),
                     (UINT)(target_index.size()), (const CPPCTYPE*)matrix_ptr,
                     state->data(), dim, state->get_cuda_stream(),
-                    state->device_number);
+                    state->device_number, false);
             }
             // multiple control qubit
             else {
@@ -356,7 +356,7 @@ void QuantumGateMatrix::update_quantum_state_async(QuantumStateGpu* state) {
                     (UINT)(control_index.size()), target_index.data(),
                     (UINT)(target_index.size()), (const CPPCTYPE*)matrix_ptr,
                     state->data(), dim, state->get_cuda_stream(),
-                    state->device_number);
+                    state->device_number, false);
             }
         }
     } else {

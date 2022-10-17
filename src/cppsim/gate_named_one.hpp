@@ -15,7 +15,7 @@
  */
 class ClsIGate : public QuantumGate_OneQubit {
     static void idling(UINT, CTYPE*, ITYPE){};
-    static void idling_gpu(UINT, void*, ITYPE, void*, UINT){};
+    static void idling_gpu(UINT, void*, ITYPE, void*, UINT, bool){};
 
 public:
     /**

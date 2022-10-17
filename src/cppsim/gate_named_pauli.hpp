@@ -59,7 +59,7 @@ public:
                 multi_qubit_Pauli_gate_partial_list_host(
                     target_index_list.data(), pauli_id_list.data(),
                     (UINT)target_index_list.size(), state->data(), state->dim,
-                    state->get_cuda_stream(), state->device_number);
+                    state->get_cuda_stream(), state->device_number, true);
                 // _update_func_gpu(this->_target_qubit_list[0].index(), _angle,
                 // state->data(), state->dim);
             } else {
@@ -92,7 +92,7 @@ public:
             multi_qubit_Pauli_gate_partial_list_host(target_index_list.data(),
                 pauli_id_list.data(), (UINT)target_index_list.size(),
                 state->data(), state->dim, state->get_cuda_stream(),
-                state->device_number);
+                state->device_number, false);
         } else {
             throw NotImplementedException(
                 "ClsPauliGate::update_quantum_state_async for "
@@ -171,7 +171,8 @@ public:
                 multi_qubit_Pauli_rotation_gate_partial_list_host(
                     target_index_list.data(), pauli_id_list.data(),
                     (UINT)target_index_list.size(), _angle, state->data(),
-                    state->dim, state->get_cuda_stream(), state->device_number);
+                    state->dim, state->get_cuda_stream(), state->device_number,
+                    true);
             } else {
                 multi_qubit_Pauli_rotation_gate_partial_list(
                     target_index_list.data(), pauli_id_list.data(),
@@ -205,7 +206,8 @@ public:
             multi_qubit_Pauli_rotation_gate_partial_list_host(
                 target_index_list.data(), pauli_id_list.data(),
                 (UINT)target_index_list.size(), _angle, state->data(),
-                state->dim, state->get_cuda_stream(), state->device_number);
+                state->dim, state->get_cuda_stream(), state->device_number,
+                false);
         } else {
             throw NotImplementedException(
                 "ClsPauliRotationGate::update_quantum_state_async for "

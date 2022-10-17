@@ -5,7 +5,7 @@
 #include "test_util.hpp"
 
 void test_single_diagonal_matrix_gate(
-    std::function<void(UINT, const CPPCTYPE*, void*, ITYPE, void*, UINT)>
+    std::function<void(UINT, const CPPCTYPE*, void*, ITYPE, void*, UINT, bool)>
         func) {
     const UINT n = 6;
     const ITYPE dim = 1ULL << n;
@@ -41,7 +41,8 @@ void test_single_diagonal_matrix_gate(
             zcoef /= norm;
             U = icoef * Identity + 1.i * zcoef * Z;
             Eigen::VectorXcd diag = U.diagonal();
-            func(target, (CPPCTYPE*)diag.data(), state, dim, stream_ptr, idx);
+            func(target, (CPPCTYPE*)diag.data(), state, dim, stream_ptr, idx,
+                true);
             test_state = get_expanded_eigen_matrix_with_identity(target, U, n) *
                          test_state;
             state_equal_gpu(state, test_state, dim, "single diagonal gate",
@@ -53,13 +54,13 @@ void test_single_diagonal_matrix_gate(
 }
 
 TEST(UpdateTest, SingleDiagonalMatrixTest) {
-    void (*func)(UINT, const CPPCTYPE*, void*, ITYPE, void*, UINT) =
+    void (*func)(UINT, const CPPCTYPE*, void*, ITYPE, void*, UINT, bool) =
         &single_qubit_diagonal_matrix_gate_host;
     test_single_diagonal_matrix_gate(func);
 }
 
 void test_single_phase_gate(
-    std::function<void(UINT, CPPCTYPE, void*, ITYPE, void*, UINT)> func) {
+    std::function<void(UINT, CPPCTYPE, void*, ITYPE, void*, UINT, bool)> func) {
     const UINT n = 6;
     const ITYPE dim = 1ULL << n;
     const UINT max_repeat = 10;
@@ -86,7 +87,7 @@ void test_single_phase_gate(
             angle = rand_real();
             U << 1, 0, 0, cos(angle) + 1.i * sin(angle);
             func(target, cos(angle) + 1.i * sin(angle), state, dim, stream_ptr,
-                idx);
+                idx, true);
             test_state = get_expanded_eigen_matrix_with_identity(target, U, n) *
                          test_state;
             state_equal_gpu(
@@ -98,7 +99,7 @@ void test_single_phase_gate(
 }
 
 TEST(UpdateTest, SinglePhaseGateTest) {
-    void (*func)(UINT, CPPCTYPE, void*, ITYPE, void*, UINT) =
+    void (*func)(UINT, CPPCTYPE, void*, ITYPE, void*, UINT, bool) =
         &single_qubit_phase_gate_host;
     test_single_phase_gate(func);
 }
