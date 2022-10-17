@@ -6,7 +6,7 @@
 #include "util_type.h"
 
 // common synchronize implemented by update_ops_named.cu
-DllExport void update_synchronize_host(void* stream);
+DllExport void synchronize_update_host(void* stream);
 
 // multi gpu version
 // update_ops_named

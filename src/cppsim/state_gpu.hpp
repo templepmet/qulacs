@@ -384,7 +384,7 @@ public:
         return os.str();
     }
 
-    void update_synchronize() { update_synchronize_host(_cuda_stream); }
+    void synchronize_update() { synchronize_update_host(_cuda_stream); }
 };
 
 namespace state {

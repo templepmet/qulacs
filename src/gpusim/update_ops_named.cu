@@ -10,7 +10,7 @@
 #include "util_type.h"
 #include "util_type_internal.h"
 
-__host__ void update_synchronize_host(void* stream) {
+__host__ void synchronize_update_host(void* stream) {
     cudaStream_t* cuda_stream = reinterpret_cast<cudaStream_t*>(stream);
     cudaError cudaStatus;
     checkCudaErrors(cudaStreamSynchronize(*cuda_stream), __FILE__, __LINE__);

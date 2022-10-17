@@ -338,7 +338,7 @@ TEST(CircuitTest, UpdateQuantumStateAsync) {
         circuit.update_quantum_state(&state);
         // async
         circuit.update_quantum_state_async(&state_async);
-        state_async.update_synchronize();
+        state_async.synchronize_update();
 
         assert_gpu_eq_gpu(state, state_async, dim, eps);
     }
