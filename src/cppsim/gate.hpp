@@ -63,6 +63,10 @@
 #include "qubit_info.hpp"
 #include "type.hpp"
 
+#ifdef _USE_GPU
+#include "state_gpu.hpp"
+#endif  // _USE_GPU
+
 //! Flgas for gate property: gate is Pauli
 #define FLAG_PAULI 0x01
 //! Flgas for gate property: gate is Clifford
@@ -158,6 +162,16 @@ public:
      * @param state 更新する量子状態
      */
     virtual void update_quantum_state(QuantumStateBase* state) = 0;
+
+#ifdef _USE_GPU
+    /**
+     * \~japanese-en 量子状態をGPU上でnon-blockingに更新する
+     *
+     * @param state 更新する量子状態
+     */
+    virtual void update_quantum_state_async(QuantumStateGpu* state) = 0;
+#endif  // _USE_GPU
+
     /**
      * \~japanese-en 自身のディープコピーを生成する
      *

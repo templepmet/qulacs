@@ -131,6 +131,15 @@ void QuantumGateDiagonalMatrix::update_quantum_state(QuantumStateBase* state) {
     }
 }
 
+#ifdef _USE_GPU
+void QuantumGateDiagonalMatrix::update_quantum_state_async(
+    QuantumStateGpu* state) {
+    throw NotImplementedException(
+        "QuantumGateDiagonalMatrix::update_quantum_state_async is not "
+        "implemented");
+}
+#endif  // _USE_GPU
+
 void QuantumGateDiagonalMatrix::add_control_qubit(
     UINT qubit_index, UINT control_value) {
     this->_control_qubit_list.push_back(

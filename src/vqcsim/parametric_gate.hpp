@@ -79,6 +79,27 @@ public:
                 state->data_c(), state->dim);
         }
     }
+
+#ifdef _USE_GPU
+    virtual void update_quantum_state_async(QuantumStateGpu* state) override {
+        if (state->is_state_vector()) {
+            if (_update_func_gpu == NULL) {
+                throw UndefinedUpdateFuncException(
+                    "Error: "
+                    "QuantumGate_SingleParameterOneQubitRotation::update_"
+                    "quantum_state(QuantumStateGpu) : update function is "
+                    "undefined");
+            }
+            _update_func_gpu(this->_target_qubit_list[0].index(), _angle,
+                state->data(), state->dim, state->get_cuda_stream(),
+                state->device_number);
+        } else {
+            throw NotImplementedException(
+                "QuantumGate_SingleParameterOneQubitRotation::update_quantum_"
+                "state_async for density matrix is not implemented");
+        }
+    }
+#endif  // _USE_GPU
 };
 
 class ClsParametricRXGate : public QuantumGate_SingleParameterOneQubitRotation {
@@ -203,6 +224,24 @@ public:
                 state->dim);
         }
     };
+
+#ifdef _USE_GPU
+    virtual void update_quantum_state_async(QuantumStateGpu* state) override {
+        auto target_index_list = _pauli->get_index_list();
+        auto pauli_id_list = _pauli->get_pauli_id_list();
+        if (state->is_state_vector()) {
+            multi_qubit_Pauli_rotation_gate_partial_list_host(
+                target_index_list.data(), pauli_id_list.data(),
+                (UINT)target_index_list.size(), _angle, state->data(),
+                state->dim, state->get_cuda_stream(), state->device_number);
+        } else {
+            throw NotImplementedException(
+                "ClsParametricPauliRotationGate::update_quantum_"
+                "state_async for density matrix is not implemented");
+        }
+    };
+#endif  // _USE_GPU
+
     virtual QuantumGate_SingleParameter* copy() const override {
         return new ClsParametricPauliRotationGate(_angle, _pauli->copy());
     };

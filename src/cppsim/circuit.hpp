@@ -13,6 +13,10 @@
 #include "exception.hpp"
 #include "type.hpp"
 
+#ifdef _USE_GPU
+#include "state_gpu.hpp"
+#endif  // _USE_GPU
+
 class QuantumStateBase;
 class QuantumGateBase;
 class PauliOperator;
@@ -163,6 +167,16 @@ public:
      */
     void update_quantum_state(
         QuantumStateBase* state, UINT start_index, UINT end_index);
+
+#ifdef _USE_GPU
+    /**
+     * \~japanese-en 量子状態をGPU上でnon-blockingに更新する
+     *
+     * 順番にすべての量子ゲートを作用する。量子状態の初期化などは行わない。
+     * @param[in,out] state 作用する量子状態
+     */
+    void update_quantum_state_async(QuantumStateGpu* state);
+#endif  // _USE_GPU
 
     /////////////////////////////// CHECK PROPERTY OF QUANTUM CIRCUIT
 

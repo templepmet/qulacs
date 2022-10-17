@@ -45,6 +45,25 @@ public:
                 state->data_c(), state->dim);
         }
     };
+
+#ifdef _USE_GPU
+    /**
+     * \~japanese-en 量子状態を更新する
+     *
+     * @param state 更新する量子状態
+     */
+    virtual void update_quantum_state_async(QuantumStateGpu* state) override {
+        if (state->is_state_vector()) {
+            _update_func_gpu(this->target_qubit_list[0].index(), state->data(),
+                state->dim, state->get_cuda_stream(), state->device_number);
+        } else {
+            throw NotImplementedException(
+                "QuantumGate_OneQubit::update_quantum_state_async for "
+                "density matrix is not implemented");
+        }
+    };
+#endif  // _USE_GPU
+
     /**
      * \~japanese-en 自身のディープコピーを生成する
      *
@@ -106,6 +125,26 @@ public:
                 state->dim);
         }
     };
+
+#ifdef _USE_GPU
+    /**
+     * \~japanese-en 量子状態を更新する
+     *
+     * @param state 更新する量子状態
+     */
+    virtual void update_quantum_state_async(QuantumStateGpu* state) override {
+        if (state->is_state_vector()) {
+            _update_func_gpu(this->_target_qubit_list[0].index(),
+                this->_target_qubit_list[1].index(), state->data(), state->dim,
+                state->get_cuda_stream(), state->device_number);
+        } else {
+            throw NotImplementedException(
+                "QuantumGate_TwoQubit::update_quantum_state_async for "
+                "density matrix is not implemented");
+        }
+    };
+#endif  // _USE_GPU
+
     /**
      * \~japanese-en 自身のディープコピーを生成する
      *
@@ -168,6 +207,26 @@ public:
                 state->dim);
         }
     };
+
+#ifdef _USE_GPU
+    /**
+     * \~japanese-en 量子状態を更新する
+     *
+     * @param state 更新する量子状態
+     */
+    virtual void update_quantum_state_async(QuantumStateGpu* state) override {
+        if (state->is_state_vector()) {
+            _update_func_gpu(this->_control_qubit_list[0].index(),
+                this->_target_qubit_list[0].index(), state->data(), state->dim,
+                state->get_cuda_stream(), state->device_number);
+        } else {
+            throw NotImplementedException(
+                "QuantumGate_OneControlOneTarget::update_quantum_state_async "
+                "for density matrix is not implemented");
+        }
+    };
+#endif  // _USE_GPU
+
     /**
      * \~japanese-en 自身のディープコピーを生成する
      *
@@ -227,6 +286,26 @@ public:
                 state->data_c(), state->dim);
         }
     };
+
+#ifdef _USE_GPU
+    /**
+     * \~japanese-en 量子状態を更新する
+     *
+     * @param state 更新する量子状態
+     */
+    virtual void update_quantum_state_async(QuantumStateGpu* state) override {
+        if (state->is_state_vector()) {
+            _update_func_gpu(this->_target_qubit_list[0].index(), _angle,
+                state->data(), state->dim, state->get_cuda_stream(),
+                state->device_number);
+        } else {
+            throw NotImplementedException(
+                "QuantumGate_OneQubitRotation::update_quantum_state_async "
+                "for density matrix is not implemented");
+        }
+    };
+#endif  // _USE_GPU
+
     /**
      * \~japanese-en 自身のディープコピーを生成する
      *

@@ -383,6 +383,8 @@ public:
         free(data);
         return os.str();
     }
+
+    void update_synchronize() { update_synchronize_host(_cuda_stream); }
 };
 
 namespace state {

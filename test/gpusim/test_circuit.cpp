@@ -229,6 +229,121 @@ TEST(CircuitTest, CircuitBasic) {
     }
 }
 
+TEST(CircuitTest, UpdateQuantumStateAsync) {
+    Eigen::MatrixXcd Identity(2, 2), X(2, 2), Y(2, 2), Z(2, 2), H(2, 2),
+        S(2, 2), T(2, 2), sqrtX(2, 2), sqrtY(2, 2), P0(2, 2), P1(2, 2);
+
+    Identity << 1, 0, 0, 1;
+    X << 0, 1, 1, 0;
+    Y << 0, -1.i, 1.i, 0;
+    Z << 1, 0, 0, -1;
+    H << 1, 1, 1, -1;
+    H /= sqrt(2.);
+    S << 1, 0, 0, 1.i;
+    T << 1, 0, 0, (1. + 1.i) / sqrt(2.);
+    sqrtX << 0.5 + 0.5i, 0.5 - 0.5i, 0.5 - 0.5i, 0.5 + 0.5i;
+    sqrtY << 0.5 + 0.5i, -0.5 - 0.5i, 0.5 + 0.5i, 0.5 + 0.5i;
+    P0 << 1, 0, 0, 0;
+    P1 << 0, 0, 0, 1;
+
+    const UINT n = 4;
+    const UINT dim = 1ULL << n;
+
+    Random random;
+
+    int ngpus = get_num_device();
+    for (int idx = 0; idx < ngpus; ++idx) {
+        set_device(idx);
+        auto stream_ptr = allocate_cuda_stream_host(1, idx);
+
+        QuantumStateGpu state(n, idx), state_async(n, idx);
+
+        state.set_Haar_random_state();
+        state_async.load(&state);
+
+        QuantumCircuit circuit(n);
+        UINT target, target_sub;
+        double angle;
+
+        target = random.int32() % n;
+        circuit.add_X_gate(target);
+
+        target = random.int32() % n;
+        circuit.add_Y_gate(target);
+
+        target = random.int32() % n;
+        circuit.add_Z_gate(target);
+
+        target = random.int32() % n;
+        circuit.add_H_gate(target);
+
+        target = random.int32() % n;
+        circuit.add_S_gate(target);
+
+        target = random.int32() % n;
+        circuit.add_Sdag_gate(target);
+
+        target = random.int32() % n;
+        circuit.add_T_gate(target);
+
+        target = random.int32() % n;
+        circuit.add_Tdag_gate(target);
+
+        target = random.int32() % n;
+        circuit.add_sqrtX_gate(target);
+
+        target = random.int32() % n;
+        circuit.add_sqrtXdag_gate(target);
+
+        target = random.int32() % n;
+        circuit.add_sqrtY_gate(target);
+
+        target = random.int32() % n;
+        circuit.add_sqrtYdag_gate(target);
+
+        target = random.int32() % n;
+        circuit.add_P0_gate(target);
+
+        target = (target + 1) % n;
+        circuit.add_P1_gate(target);
+
+        target = random.int32() % n;
+        angle = random.uniform() * 3.14159;
+        circuit.add_RotInvX_gate(target, angle);
+
+        target = random.int32() % n;
+        angle = random.uniform() * 3.14159;
+        circuit.add_RotInvY_gate(target, angle);
+
+        target = random.int32() % n;
+        angle = random.uniform() * 3.14159;
+        circuit.add_RotInvZ_gate(target, angle);
+
+        target = random.int32() % n;
+        target_sub = random.int32() % (n - 1);
+        if (target_sub >= target) target_sub++;
+        circuit.add_CNOT_gate(target, target_sub);
+
+        target = random.int32() % n;
+        target_sub = random.int32() % (n - 1);
+        if (target_sub >= target) target_sub++;
+        circuit.add_CZ_gate(target, target_sub);
+
+        target = random.int32() % n;
+        target_sub = random.int32() % (n - 1);
+        if (target_sub >= target) target_sub++;
+        circuit.add_SWAP_gate(target, target_sub);
+
+        // sync
+        circuit.update_quantum_state(&state);
+        // async
+        circuit.update_quantum_state_async(&state_async);
+        state_async.update_synchronize();
+
+        assert_gpu_eq_gpu(state, state_async, dim, eps);
+    }
+}
+
 TEST(CircuitTest, CircuitOptimize) {
     const UINT n = 4;
     const UINT dim = 1ULL << n;

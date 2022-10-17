@@ -58,6 +58,21 @@ void QuantumCircuit::update_quantum_state(
     }
 }
 
+#ifdef _USE_GPU
+void QuantumCircuit::update_quantum_state_async(QuantumStateGpu* state) {
+    if (state->qubit_count != this->qubit_count) {
+        throw InvalidQubitCountException(
+            "Error: "
+            "QuantumCircuit::update_quantum_state_async(QuantumStateGpu) : "
+            "invalid qubit count");
+    }
+
+    for (const auto& gate : this->_gate_list) {
+        gate->update_quantum_state_async(state);
+    }
+}
+#endif  // _USE_GPU
+
 QuantumCircuit::QuantumCircuit(const QuantumCircuit& obj)
     : qubit_count(_qubit_count), gate_list(_gate_list) {
     _gate_list.clear();
@@ -272,8 +287,8 @@ std::string QuantumCircuit::to_string() const {
     UINT max_block_size = 0;
 
     for (const auto gate : this->_gate_list) {
-        UINT whole_qubit_index_count = (UINT)(
-            gate->target_qubit_list.size() + gate->control_qubit_list.size());
+        UINT whole_qubit_index_count = (UINT)(gate->target_qubit_list.size() +
+                                              gate->control_qubit_list.size());
         if (whole_qubit_index_count == 0) continue;
         gate_size_count[whole_qubit_index_count - 1]++;
         max_block_size = std::max(max_block_size, whole_qubit_index_count);

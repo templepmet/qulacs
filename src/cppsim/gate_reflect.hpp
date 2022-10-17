@@ -65,6 +65,15 @@ public:
             throw NotImplementedException("not implemented");
         }
     };
+
+#ifdef _USE_GPU
+    virtual void update_quantum_state_async(QuantumStateGpu* state) override {
+        throw NotImplementedException(
+            "ClsStateReflectionGate::update_quantum_state_async is not "
+            "implemented");
+    };
+#endif  // _USE_GPU
+
     /**
      * \~japanese-en
      * 自身のディープコピーを生成する

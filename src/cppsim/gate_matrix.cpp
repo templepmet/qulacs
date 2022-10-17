@@ -270,6 +270,103 @@ void QuantumGateMatrix::update_quantum_state(QuantumStateBase* state) {
     }
 }
 
+#ifdef _USE_GPU
+void QuantumGateMatrix::update_quantum_state_async(QuantumStateGpu* state) {
+    ITYPE dim = 1ULL << state->qubit_count;
+
+    // Eigen::Matrix<std::complex<double>, Eigen::Dynamic, Eigen::Dynamic,
+    // Eigen::RowMajor> row_matrix(this->_matrix_element); const CTYPE*
+    // matrix_ptr = reinterpret_cast<const CTYPE*>(row_matrix.data()); const
+    // CTYPE* matrix_ptr = reinterpret_cast<const
+    // CTYPE*>(this->_matrix_element.data());
+    /*
+  #ifdef _USE_GPU
+    const void* matrix_ptr = NULL;
+    if (state->get_device_name() == "gpu") {
+    matrix_ptr = reinterpret_cast<const void*>(this->_matrix_element.data());
+  }else{
+    matrix_ptr = reinterpret_cast<const CTYPE*>(this->_matrix_element.data());
+  }
+  #else
+  */
+    const CTYPE* matrix_ptr =
+        reinterpret_cast<const CTYPE*>(this->_matrix_element.data());
+    //#endif
+
+    // convert list of QubitInfo to list of UINT
+    std::vector<UINT> target_index;
+    std::vector<UINT> control_index;
+    std::vector<UINT> control_value;
+    std::transform(this->_target_qubit_list.cbegin(),
+        this->_target_qubit_list.cend(), std::back_inserter(target_index),
+        [](auto value) { return value.index(); });
+    for (auto val : this->_control_qubit_list) {
+        control_index.push_back(val.index());
+        control_value.push_back(val.control_value());
+    }
+
+    if (state->is_state_vector()) {
+        // single qubit dense matrix gate
+        if (this->_target_qubit_list.size() == 1) {
+            // no control qubit
+            if (this->_control_qubit_list.size() == 0) {
+                single_qubit_dense_matrix_gate_host(target_index[0],
+                    (const CPPCTYPE*)matrix_ptr, state->data(), dim,
+                    state->get_cuda_stream(), state->device_number);
+            }
+            // single control qubit
+            else if (this->_control_qubit_list.size() == 1) {
+                single_qubit_control_single_qubit_dense_matrix_gate_host(
+                    control_index[0], control_value[0], target_index[0],
+                    (const CPPCTYPE*)matrix_ptr, state->data(), dim,
+                    state->get_cuda_stream(), state->device_number);
+            }
+            // multiple control qubits
+            else {
+                multi_qubit_control_multi_qubit_dense_matrix_gate_host(
+                    control_index.data(), control_value.data(),
+                    (UINT)(control_index.size()), target_index.data(),
+                    (UINT)(target_index.size()), (const CPPCTYPE*)matrix_ptr,
+                    state->data(), dim, state->get_cuda_stream(),
+                    state->device_number);
+            }
+        }
+
+        // multi qubit dense matrix gate
+        else {
+            // no control qubit
+            if (this->_control_qubit_list.size() == 0) {
+                multi_qubit_dense_matrix_gate_host(target_index.data(),
+                    (UINT)(target_index.size()), (const CPPCTYPE*)matrix_ptr,
+                    state->data(), dim, state->get_cuda_stream(),
+                    state->device_number);
+            }
+            // single control qubit
+            else if (this->_control_qubit_list.size() == 1) {
+                single_qubit_control_multi_qubit_dense_matrix_gate_host(
+                    control_index[0], control_value[0], target_index.data(),
+                    (UINT)(target_index.size()), (const CPPCTYPE*)matrix_ptr,
+                    state->data(), dim, state->get_cuda_stream(),
+                    state->device_number);
+            }
+            // multiple control qubit
+            else {
+                multi_qubit_control_multi_qubit_dense_matrix_gate_host(
+                    control_index.data(), control_value.data(),
+                    (UINT)(control_index.size()), target_index.data(),
+                    (UINT)(target_index.size()), (const CPPCTYPE*)matrix_ptr,
+                    state->data(), dim, state->get_cuda_stream(),
+                    state->device_number);
+            }
+        }
+    } else {
+        throw NotImplementedException(
+            "QuantumGateMatrix::update_quantum_state_async for density matrix "
+            "is not implemented");
+    }
+}
+#endif  // _USE_GPU
+
 void QuantumGateMatrix::add_control_qubit(
     UINT qubit_index, UINT control_value) {
     this->_control_qubit_list.push_back(

@@ -5,6 +5,9 @@
 #include "util_export.h"
 #include "util_type.h"
 
+// common synchronize implemented by update_ops_named.cu
+DllExport void update_synchronize_host(void* stream);
+
 // multi gpu version
 // update_ops_named
 DllExport void H_gate_host(unsigned int target_qubit_index, void* state,

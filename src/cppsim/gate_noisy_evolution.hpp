@@ -373,6 +373,19 @@ public:
         delete k4;
         delete buffer;
     }
+
+#ifdef _USE_GPU
+    /**
+     * \~japanese-en 量子状態を更新する
+     *
+     * @param state 更新する量子状態
+     */
+    virtual void update_quantum_state_async(QuantumStateGpu* state) {
+        throw NotImplementedException(
+            "ClsNoisyEvolution::update_quantum_state_async is not "
+            "implemented");
+    }
+#endif  // _USE_GPU
 };
 
 /*
@@ -743,4 +756,17 @@ public:
 
         delete buffer;
     }
+
+#ifdef _USE_GPU
+    /**
+     * \~japanese-en 量子状態を更新する
+     *
+     * @param state 更新する量子状態
+     */
+    virtual void update_quantum_state_async(QuantumStateGpu* state) {
+        throw NotImplementedException(
+            "ClsNoisyEvolution_fast::update_quantum_state_async is not "
+            "implemented");
+    }
+#endif  // _USE_GPU
 };

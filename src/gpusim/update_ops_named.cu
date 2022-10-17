@@ -10,6 +10,14 @@
 #include "util_type.h"
 #include "util_type_internal.h"
 
+__host__ void update_synchronize_host(void* stream) {
+    cudaStream_t* cuda_stream = reinterpret_cast<cudaStream_t*>(stream);
+    cudaError cudaStatus;
+    checkCudaErrors(cudaStreamSynchronize(*cuda_stream), __FILE__, __LINE__);
+    cudaStatus = cudaGetLastError();
+    checkCudaErrors(cudaStatus, __FILE__, __LINE__);
+}
+
 __global__ void H_gate_gpu(
     unsigned int target_qubit_index, GTYPE* state_gpu, ITYPE dim) {
     ITYPE j = blockIdx.x * blockDim.x + threadIdx.x;

@@ -78,6 +78,29 @@ public:
                 state->data_c(), state->dim);
         }
     };
+
+#ifdef _USE_GPU
+    /**
+     * \~japanese-en 量子状態を更新する
+     *
+     * @param state 更新する量子状態
+     */
+    virtual void update_quantum_state_async(QuantumStateGpu* state) override {
+        auto target_index_list = _pauli->get_index_list();
+        auto pauli_id_list = _pauli->get_pauli_id_list();
+        if (state->is_state_vector()) {
+            multi_qubit_Pauli_gate_partial_list_host(target_index_list.data(),
+                pauli_id_list.data(), (UINT)target_index_list.size(),
+                state->data(), state->dim, state->get_cuda_stream(),
+                state->device_number);
+        } else {
+            throw NotImplementedException(
+                "ClsPauliGate::update_quantum_state_async for "
+                "density matrix is not implemented");
+        }
+    };
+#endif  // _USE_GPU
+
     /**
      * \~japanese-en 自身のディープコピーを生成する
      *
@@ -168,6 +191,29 @@ public:
                 state->dim);
         }
     };
+
+#ifdef _USE_GPU
+    /**
+     * \~japanese-en 量子状態を更新する
+     *
+     * @param state 更新する量子状態
+     */
+    virtual void update_quantum_state_async(QuantumStateGpu* state) override {
+        auto target_index_list = _pauli->get_index_list();
+        auto pauli_id_list = _pauli->get_pauli_id_list();
+        if (state->is_state_vector()) {
+            multi_qubit_Pauli_rotation_gate_partial_list_host(
+                target_index_list.data(), pauli_id_list.data(),
+                (UINT)target_index_list.size(), _angle, state->data(),
+                state->dim, state->get_cuda_stream(), state->device_number);
+        } else {
+            throw NotImplementedException(
+                "ClsPauliRotationGate::update_quantum_state_async for "
+                "density matrix is not implemented");
+        }
+    };
+#endif
+
     /**
      * \~japanese-en 自身のディープコピーを生成する
      *

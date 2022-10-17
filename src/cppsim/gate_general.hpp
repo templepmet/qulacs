@@ -133,6 +133,20 @@ public:
             delete temp_state;
         }
     };
+
+#ifdef _USE_GPU
+    /**
+     * \~japanese-en 量子状態を更新する
+     *
+     * @param state 更新する量子状態
+     */
+    virtual void update_quantum_state_async(QuantumStateGpu* state) override {
+        throw NotImplementedException(
+            "QuantumGate_Probabilistic::update_quantum_state_async is not "
+            "implemented");
+    };
+#endif  // _USE_GPU
+
     /**
      * \~japanese-en 自身のディープコピーを生成する
      *
@@ -237,6 +251,20 @@ public:
         state->set_classical_value(
             this->_classical_register_address, (UINT)gate_index);
     };
+
+#ifdef _USE_GPU
+    /**
+     * \~japanese-en 量子状態を更新する
+     *
+     * @param state 更新する量子状態
+     */
+    virtual void update_quantum_state_async(QuantumStateGpu* state) override {
+        throw NotImplementedException(
+            "QuantumGate_ProbabilisticInstrument::update_quantum_state_async "
+            "is not implemented");
+    };
+#endif  // _USE_GPU
+
     /**
      * \~japanese-en 自身のディープコピーを生成する
      *
@@ -339,6 +367,18 @@ public:
             delete temp_state;
         }
     };
+
+#ifdef _USE_GPU
+    /**
+     * \~japanese-en 量子状態を更新する
+     *
+     * @param state 更新する量子状態
+     */
+    virtual void update_quantum_state_async(QuantumStateGpu* state) override {
+        throw NotImplementedException(
+            "QuantumGate_CPTP::update_quantum_state_async is not implemented");
+    };
+#endif  // _USE_GPU
 
     /**
      * \~japanese-en 自身のディープコピーを生成する
@@ -478,6 +518,13 @@ public:
         }
     };
 
+#ifdef _USE_GPU
+    virtual void update_quantum_state_async(QuantumStateGpu* state) override {
+        throw NotImplementedException(
+            "QuantumGate_CP::update_quantum_state_async is not implemented");
+    }
+#endif
+
     /**
      * \~japanese-en 自身のディープコピーを生成する
      *
@@ -578,6 +625,20 @@ public:
 
         state->set_classical_value(_classical_register_address, index);
     };
+
+#ifdef _USE_GPU
+    /**
+     * \~japanese-en 量子状態を更新する
+     *
+     * @param state 更新する量子状態
+     */
+    virtual void update_quantum_state_async(QuantumStateGpu* state) override {
+        throw NotImplementedException(
+            "QuantumGate_Instrument::update_quantum_state_async is not "
+            "implemented");
+    }
+#endif  // _USE_GPU
+
     /**
      * \~japanese-en 自身のディープコピーを生成する
      *
@@ -678,6 +739,20 @@ public:
             _gate->update_quantum_state(state);
         }
     };
+
+#ifdef _USE_GPU
+    /**
+     * \~japanese-en 量子状態を更新する
+     *
+     * @param state 更新する量子状態
+     */
+    virtual void update_quantum_state_async(QuantumStateGpu* state) override {
+        throw NotImplementedException(
+            "QuantumGate_Adaptive::update_quantum_state_async is not supported "
+            "on GPU");
+    };
+#endif  // _USE_GPU
+
     /**
      * \~japanese-en 自身のディープコピーを生成する
      *
