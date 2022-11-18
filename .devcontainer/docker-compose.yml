@@ -1,0 +1,18 @@
+version: '3'
+services:
+  main:
+    container_name: qulacs
+    build:
+      context: .
+      args:
+        USERNAME: "dev"
+        UID: $UID
+        GID: $GID
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - capabilities: [gpu]
+    tty: true
+    volumes:
+      - ..:/workspace/qulacs

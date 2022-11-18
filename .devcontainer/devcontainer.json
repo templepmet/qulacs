@@ -1,17 +1,12 @@
 // For format details, see https://aka.ms/devcontainer.json. For config options, see the README at:
-// https://github.com/microsoft/vscode-dev-containers/tree/v0.209.6/containers/cpp
+// https://github.com/microsoft/vscode-dev-containers/tree/v0.209.5/containers/python-3
 {
-	"name": "C++",
-	"build": {
-		"dockerfile": "Dockerfile",
-		"cacheFrom": "ghcr.io/qulacs/qulacs-devcontainer:latest"
-	},
-	"runArgs": [
-		"--cap-add=SYS_PTRACE",
-		"--security-opt",
-		"seccomp=unconfined"
-	],
-	// Set *default* container specific settings.json values on container create.
+	"name": "NVHPC 22.7",
+	"dockerComposeFile": "docker-compose.yml",
+	"service": "main",
+	"remoteUser": "dev",
+	"workspaceFolder": "/workspace/qulacs",
+	"initializeCommand": "${localWorkspaceFolder}/.devcontainer/init.sh",
 	"settings": {
 		"python.linting.enabled": true,
 		"python.linting.pylintEnabled": false,
@@ -37,22 +32,5 @@
 		"ms-python.python",
 		"ms-python.vscode-pylance",
 		"xaver.clang-format"
-	],
-	// Required by `mounts`.
-	// c.f. https://code.visualstudio.com/remote/advancedcontainers/improve-performance#_use-a-targeted-named-volume
-	"workspaceMount": "source=${localWorkspaceFolder},target=/workspaces/qulacs,type=bind,consistency=cached",
-	"workspaceFolder": "/workspaces/qulacs",
-	"mounts": [
-		"source=${localWorkspaceFolderBasename}-build,target=${containerWorkspaceFolder}/build,type=volume"
-	],
-	// A location of gpg might differ from host machine's git config.
-	// This config accepts string or array. If you use array form destructure command like following; not a list of commands.
-	// ["echo", "hello"]
-	"postStartCommand": "/usr/bin/git config --global gpg.program /usr/bin/gpg && sudo chown vscode build",
-	// Use 'forwardPorts' to make a list of ports inside the container available locally.
-	// "forwardPorts": [],
-	// Use 'postCreateCommand' to run commands after the container is created.
-	// "postCreateCommand": "gcc -v",
-	// Comment out connect as root instead. More info: https://aka.ms/vscode-remote/containers/non-root.
-	"remoteUser": "vscode",
+	]
 }

@@ -21,13 +21,7 @@ set(DEFAULT_USE_OMP Yes)
 set(DEFAULT_USE_GPU No)
 set(DEFAULT_USE_PYTHON Yes)
 set(DEFAULT_USE_TEST No)
-if(("${CMAKE_HOST_SYSTEM_PROCESSOR}" STREQUAL "aarch64") OR
-		("${CMAKE_C_COMPILER}" MATCHES "/usr/bin/aarch64-linux-gnu-gcc*")) # for cross-compile
-	message(STATUS "SIMD SUPPORT: Yes")
-	set(DEFAULT_OPT_FLAGS "-mtune=native -march=native")
-	set(DEFAULT_USE_SIMD Yes)
-elseif(("${CMAKE_HOST_SYSTEM_PROCESSOR}" MATCHES "^x86.*") OR
-		("${CMAKE_HOST_SYSTEM_PROCESSOR}" STREQUAL "AMD64"))
+if(("${CMAKE_HOST_SYSTEM_PROCESSOR}" MATCHES "^x86.*") OR ("${CMAKE_HOST_SYSTEM_PROCESSOR}" STREQUAL "AMD64"))
 	message(STATUS "SIMD SUPPORT: Yes")
 	set(DEFAULT_OPT_FLAGS "-mtune=native -march=native -mfpmath=both")
 	set(DEFAULT_USE_SIMD Yes)
@@ -63,6 +57,12 @@ message(STATUS "USE_GPU = ${USE_GPU}")
 message(STATUS "USE_TEST = ${USE_TEST}")
 message(STATUS "USE_PYTHON = ${USE_PYTHON}")
 message(STATUS "OPT_FLAGS = ${OPT_FLAGS}")
+
+
+##### set language #####
+if (USE_GPU)
+	enable_language(CUDA)
+endif()
 
 ##### configure include files #####
 file(GLOB_RECURSE header_files ${CMAKE_CURRENT_SOURCE_DIR}/src/*.hpp  ${CMAKE_CURRENT_SOURCE_DIR}/src/*.h)
@@ -213,8 +213,8 @@ if(MSYS OR MINGW OR UNIX OR APPLE)
 
 	# Set C++ standard
 	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c11")
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
-	set(PYBIND11_CPP_STANDARD -std=c++14)
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17")
+	set(PYBIND11_CPP_STANDARD -std=c++17)
 
 	# Enable pthread
 	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -pthread")
@@ -239,32 +239,15 @@ if(MSYS OR MINGW OR UNIX OR APPLE)
 	endif()
 
 	# Enable simd
-	if("${CMAKE_HOST_SYSTEM_PROCESSOR}" STREQUAL "aarch64")
-		## Check if SVE is supported
-		include(${CMAKE_SOURCE_DIR}/cmake_script/FindSVE.cmake)
-		CHECK_SVE_LINUX()
-		message(STATUS "SVE_FOUND = ${SVE_FOUND}")
-		if(USE_SIMD AND SVE_FOUND)
-			message(STATUS "SVE Enabled")
-			add_compile_options("-D _USE_SVE")
-		else()
-			message(STATUS "SVE Disabled")
-		endif()
-	elseif("${CMAKE_C_COMPILER}" MATCHES "/usr/bin/aarch64-linux-gnu-gcc*") # for cross-compile
-		message(STATUS "SVE Enabled(force)")
-		add_compile_options("-D _USE_SVE")
-	elseif(("${CMAKE_HOST_SYSTEM_PROCESSOR}" MATCHES "^x86.*") OR
-			("${CMAKE_HOST_SYSTEM_PROCESSOR}" STREQUAL "AMD64"))
-		## Check if AVX2 is supported
-		include(${CMAKE_SOURCE_DIR}/cmake_script/FindAVX2.cmake)
-		CHECK_AVX2_LINUX()
-		message(STATUS "AVX2_FOUND = ${AVX2_FOUND}")
-		if(USE_SIMD AND AVX2_FOUND)
-			message(STATUS "AVX2 Enabled")
-			add_compile_options("-D _USE_SIMD")
-		else()
-			message(STATUS "AVX2 Disabled")
-		endif()
+	## Check if AVX2 is supported
+	include(${CMAKE_SOURCE_DIR}/cmake_script/FindAVX2.cmake)
+	CHECK_AVX2_LINUX()
+	message(STATUS "AVX2_FOUND = ${AVX2_FOUND}")
+	if(USE_SIMD AND AVX2_FOUND)
+		message(STATUS "AVX2 Enabled")
+		add_compile_options("-D _USE_SIMD")
+	else()
+		message(STATUS "AVX2 Disabled")
 	endif()
 
 	# Add optimization flags
@@ -374,11 +357,6 @@ if(USE_TEST)
 			COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/bin/csim_test
 			COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/bin/cppsim_test
 			COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/bin/vqcsim_test
-		)
-		add_custom_target(buildtest
-			DEPENDS csim_test
-			DEPENDS cppsim_test
-			DEPENDS vqcsim_test
 		)
 		add_custom_target(coverage
 			DEPENDS test
