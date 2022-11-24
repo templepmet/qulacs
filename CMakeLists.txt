@@ -1,27 +1,35 @@
 
 cmake_minimum_required(VERSION 2.8)
 
-if (POLICY CMP0048)
-  cmake_policy(SET CMP0048 NEW)
-endif (POLICY CMP0048)
+if(POLICY CMP0048)
+	cmake_policy(SET CMP0048 NEW)
+endif(POLICY CMP0048)
 
 project(qulacs)
 
-##### Check GCC version #####
+# #### Check GCC version #####
 if(${CMAKE_C_COMPILER_VERSION} VERSION_LESS 7.0.0)
 	message(FATAL_ERROR, "gcc >= 7.0.0 is required.")
 endif()
+
 if(${CMAKE_CXX_COMPILER_VERSION} VERSION_LESS 7.0.0)
 	message(FATAL_ERROR, "g++ >= 7.0.0 is required.")
 endif()
 
-
-##### Set default behavior #####
+# #### Set default behavior #####
 set(DEFAULT_USE_OMP Yes)
 set(DEFAULT_USE_GPU No)
 set(DEFAULT_USE_PYTHON Yes)
 set(DEFAULT_USE_TEST No)
-if(("${CMAKE_HOST_SYSTEM_PROCESSOR}" MATCHES "^x86.*") OR ("${CMAKE_HOST_SYSTEM_PROCESSOR}" STREQUAL "AMD64"))
+set(DEFAULT_COVERAGE No)
+
+if(("${CMAKE_HOST_SYSTEM_PROCESSOR}" STREQUAL "aarch64") OR
+	("${CMAKE_C_COMPILER}" MATCHES "/usr/bin/aarch64-linux-gnu-gcc*")) # for cross-compile
+	message(STATUS "SIMD SUPPORT: Yes")
+	set(DEFAULT_OPT_FLAGS "-mtune=native -march=native")
+	set(DEFAULT_USE_SIMD Yes)
+elseif(("${CMAKE_HOST_SYSTEM_PROCESSOR}" MATCHES "^x86.*") OR
+	("${CMAKE_HOST_SYSTEM_PROCESSOR}" STREQUAL "AMD64"))
 	message(STATUS "SIMD SUPPORT: Yes")
 	set(DEFAULT_OPT_FLAGS "-mtune=native -march=native -mfpmath=both")
 	set(DEFAULT_USE_SIMD Yes)
@@ -34,18 +42,27 @@ endif()
 if(NOT DEFINED USE_SIMD)
 	set(USE_SIMD ${DEFAULT_USE_SIMD})
 endif()
+
 if(NOT DEFINED USE_OMP)
 	set(USE_OMP ${DEFAULT_USE_OMP})
 endif()
+
 if(NOT DEFINED USE_GPU)
 	set(USE_GPU ${DEFAULT_USE_GPU})
 endif()
+
 if(NOT DEFINED USE_PYTHON)
 	set(USE_PYTHON ${DEFAULT_USE_PYTHON})
 endif()
+
 if(NOT DEFINED USE_TEST)
 	set(USE_TEST ${DEFAULT_USE_TEST})
 endif()
+
+if(NOT DEFINED COVERAGE)
+	set(COVERAGE ${DEFAULT_COVERAGE})
+endif()
+
 if(NOT DEFINED OPT_FLAGS)
 	set(OPT_FLAGS ${DEFAULT_OPT_FLAGS})
 endif()
@@ -55,71 +72,75 @@ message(STATUS "USE_SIMD = ${USE_SIMD}")
 message(STATUS "USE_OMP = ${USE_OMP}")
 message(STATUS "USE_GPU = ${USE_GPU}")
 message(STATUS "USE_TEST = ${USE_TEST}")
+message(STATUS "COVERAGE = ${COVERAGE}")
 message(STATUS "USE_PYTHON = ${USE_PYTHON}")
 message(STATUS "OPT_FLAGS = ${OPT_FLAGS}")
 
-
-##### set language #####
-if (USE_GPU)
+# #### set language #####
+if(USE_GPU)
 	enable_language(CUDA)
 endif()
 
-##### configure include files #####
-file(GLOB_RECURSE header_files ${CMAKE_CURRENT_SOURCE_DIR}/src/*.hpp  ${CMAKE_CURRENT_SOURCE_DIR}/src/*.h)
+# #### configure include files #####
+file(GLOB_RECURSE header_files ${CMAKE_CURRENT_SOURCE_DIR}/src/*.hpp ${CMAKE_CURRENT_SOURCE_DIR}/src/*.h)
+
 foreach(path IN LISTS header_files)
 	string(REPLACE ${CMAKE_CURRENT_SOURCE_DIR}/src/ ${CMAKE_CURRENT_SOURCE_DIR}/include/ path_dst ${path})
 	configure_file(${path} ${path_dst} COPYONLY)
 endforeach()
+
 # include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src)
 
-
-##### set external projects #####
+# #### set external projects #####
 include(ExternalProject)
 include(${CMAKE_SOURCE_DIR}/cmake_script/FetchContent.cmake)
 
 # Boost
-set(Boost_USE_STATIC_LIBS    ON)
-set(Boost_USE_MULTITHREADED  ON)
+set(Boost_USE_STATIC_LIBS ON)
+set(Boost_USE_MULTITHREADED ON)
 set(Boost_USE_STATIC_RUNTIME ON)
+
 # The minimum version tested in CI is 1.71.0.
 find_package(Boost 1.71.0 REQUIRED)
 include_directories(${Boost_INCLUDE_DIRS})
+
 if(NOT Boost_FOUND)
-        message(FATAL_ERROR "Boost not found. Please install boost.")
+	message(FATAL_ERROR "Boost not found. Please install boost.")
 endif()
+
 message(STATUS "Boost found at ${Boost_INCLUDE_DIRS}")
 
 # Eigen
-set(EIGEN_BUILD_DIR   ${CMAKE_BINARY_DIR}/eigen)
+set(EIGEN_BUILD_DIR ${CMAKE_BINARY_DIR}/eigen)
 set(EIGEN_INSTALL_DIR ${CMAKE_SOURCE_DIR}/include)
 set(EIGEN_INCLUDE_DIR ${EIGEN_INSTALL_DIR})
 ExternalProject_Add(
-    eigen
-    URL https://gitlab.com/libeigen/eigen/-/archive/3.3.7/eigen-3.3.7.tar.gz
-    PREFIX ${EIGEN_BUILD_DIR}
-    CONFIGURE_COMMAND ""
-    BUILD_COMMAND ""
-    INSTALL_COMMAND
-      ${CMAKE_COMMAND} -E copy_directory ${EIGEN_BUILD_DIR}/src/eigen/Eigen ${EIGEN_INCLUDE_DIR}/Eigen
-      && ${CMAKE_COMMAND} -E copy_directory ${EIGEN_BUILD_DIR}/src/eigen/unsupported ${EIGEN_INCLUDE_DIR}/unsupported
-    TEST_COMMAND ""
+	eigen
+	URL https://gitlab.com/libeigen/eigen/-/archive/3.3.7/eigen-3.3.7.tar.gz
+	PREFIX ${EIGEN_BUILD_DIR}
+	CONFIGURE_COMMAND ""
+	BUILD_COMMAND ""
+	INSTALL_COMMAND
+	${CMAKE_COMMAND} -E copy_directory ${EIGEN_BUILD_DIR}/src/eigen/Eigen ${EIGEN_INCLUDE_DIR}/Eigen
+	&& ${CMAKE_COMMAND} -E copy_directory ${EIGEN_BUILD_DIR}/src/eigen/unsupported ${EIGEN_INCLUDE_DIR}/unsupported
+	TEST_COMMAND ""
 )
 include_directories(SYSTEM ${EIGEN_INCLUDE_DIR})
 
 # Cereal
-set(CEREAL_BUILD_DIR   ${CMAKE_BINARY_DIR}/cereal)
+set(CEREAL_BUILD_DIR ${CMAKE_BINARY_DIR}/cereal)
 set(CEREAL_INSTALL_DIR ${CMAKE_SOURCE_DIR}/include)
 set(CEREAL_INCLUDE_DIR ${CEREAL_INSTALL_DIR})
 ExternalProject_Add(
-    Cereal
-    URL https://github.com/USCiLab/cereal/archive/v1.3.0.tar.gz
-    PREFIX ${CEREAL_BUILD_DIR}
-    CONFIGURE_COMMAND ""
-    BUILD_COMMAND ""
-    INSTALL_COMMAND
-      ${CMAKE_COMMAND} -E copy_directory ${CEREAL_BUILD_DIR}/src/Cereal/include ${CEREAL_INCLUDE_DIR}
-    TEST_COMMAND ""
+	Cereal
+	URL https://github.com/USCiLab/cereal/archive/v1.3.0.tar.gz
+	PREFIX ${CEREAL_BUILD_DIR}
+	CONFIGURE_COMMAND ""
+	BUILD_COMMAND ""
+	INSTALL_COMMAND
+	${CMAKE_COMMAND} -E copy_directory ${CEREAL_BUILD_DIR}/src/Cereal/include ${CEREAL_INCLUDE_DIR}
+	TEST_COMMAND ""
 )
 include_directories(SYSTEM ${CEREAL_INCLUDE_DIR})
 
@@ -131,6 +152,7 @@ if(USE_TEST)
 		GIT_TAG release-1.8.1
 	)
 	FetchContent_GetProperties(googletest_fetch)
+
 	if(NOT googletest_fetch_POPULATED)
 		message(STATUS "Fetch googletest for C++ testing")
 		FetchContent_Populate(googletest_fetch)
@@ -143,7 +165,7 @@ endif()
 # Pybind11
 if(USE_PYTHON)
 	if(MSYS OR MINGW OR CYGWIN)
-		set(PYBIND11_BUILD_DIR   ${CMAKE_BINARY_DIR}/pybind11)
+		set(PYBIND11_BUILD_DIR ${CMAKE_BINARY_DIR}/pybind11)
 		set(PYBIND11_INSTALL_DIR ${CMAKE_SOURCE_DIR}/python/pybind11)
 		set(PYBIND11_INCLUDE_DIR ${PYBIND11_INSTALL_DIR}/include)
 		ExternalProject_Add(
@@ -164,6 +186,7 @@ if(USE_PYTHON)
 			GIT_TAG v2.10.0
 		)
 		FetchContent_GetProperties(pybind11_fetch)
+
 		if(NOT pybind11_fetch_POPULATED)
 			message(STATUS "Fetch pybind11 for python-binding")
 			FetchContent_Populate(pybind11_fetch)
@@ -174,8 +197,7 @@ else()
 	message(STATUS "Skip downloading pybind11")
 endif()
 
-
-##### set warnings #####
+# #### set warnings #####
 if(NOT USE_GPU)
 	set(WARNING_C "-Wall -Wextra -Werror=undef -Wlogical-op -Wmissing-include-dirs \
 	 -Wpointer-arith -Winit-self -Wfloat-equal -Wsuggest-attribute=noreturn \
@@ -189,10 +211,11 @@ if(NOT USE_GPU)
 	 -Werror=format=2 -Wredundant-decls -Wmissing-noreturn \
 	 -Wimplicit-fallthrough=5 -Wshadow -Wendif-labels -Wstrict-aliasing=2 -Wwrite-strings -Werror=overflow -Wdate-time \
 	 -fdiagnostics-color=auto")
-	 # -Werror=undef is eliminated due to conflict with boost
+
+	# -Werror=undef is eliminated due to conflict with boost
 endif()
 
-##### set output directory #####
+# #### set output directory #####
 # PYTHON_SETUP_FLAG is set if you have run setup.py previously.
 if(NOT DEFINED PYTHON_SETUP_FLAG)
 	message(STATUS "Install from cmakebuild")
@@ -200,14 +223,14 @@ if(NOT DEFINED PYTHON_SETUP_FLAG)
 	set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/../bin)
 
 	if(MSVC)
-	        set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_RELEASE ${CMAKE_BINARY_DIR}/../lib)
-	        set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_BINARY_DIR}/../bin)
+		set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_RELEASE ${CMAKE_BINARY_DIR}/../lib)
+		set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_BINARY_DIR}/../bin)
 	endif()
 else()
 	message(STATUS "Install from pip")
 endif()
 
-##### set flags #####
+# #### set flags #####
 if(MSYS OR MINGW OR UNIX OR APPLE)
 	set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
@@ -239,10 +262,11 @@ if(MSYS OR MINGW OR UNIX OR APPLE)
 	endif()
 
 	# Enable simd
-	## Check if AVX2 is supported
+	# # Check if AVX2 is supported
 	include(${CMAKE_SOURCE_DIR}/cmake_script/FindAVX2.cmake)
 	CHECK_AVX2_LINUX()
 	message(STATUS "AVX2_FOUND = ${AVX2_FOUND}")
+
 	if(USE_SIMD AND AVX2_FOUND)
 		message(STATUS "AVX2 Enabled")
 		add_compile_options("-D _USE_SIMD")
@@ -253,14 +277,13 @@ if(MSYS OR MINGW OR UNIX OR APPLE)
 	# Add optimization flags
 	set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} ${OPT_FLAGS}")
 	set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} ${OPT_FLAGS}")
-	
+
 	# Add coverage flags
-	if(USE_TEST)
+	if(COVERAGE)
 		set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} --coverage")
 		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --coverage")
 		set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} --coverage")
 	endif()
-
 
 elseif(MSVC)
 	# Compile csim with cpp compiler since VC does not completely support C99 complex values
@@ -268,16 +291,18 @@ elseif(MSVC)
 	# add_compile_options("/TP")
 
 	# Ignore warning
-	## ignore warning about template export
+	# # ignore warning about template export
 	add_compile_options(/wd4251)
-	## ignore warning on non-Unicode files
+
+	# # ignore warning on non-Unicode files
 	add_compile_options(/wd4819)
 
 	# Enable simd
-	## Check if AVX2 is supported
+	# # Check if AVX2 is supported
 	include(${CMAKE_SOURCE_DIR}/cmake_script/FindAVX2.cmake)
 	CHECK_AVX2_WINDOWS()
 	message(STATUS "AVX2_FOUND = ${AVX2_FOUND}")
+
 	if(USE_SIMD AND AVX2_FOUND)
 		message(STATUS "AVX2 Enabled")
 		add_compile_options("/D_USE_SIMD")
@@ -302,6 +327,7 @@ elseif(MSVC)
 		CMAKE_CXX_FLAGS_RELWITHDEBINFO
 		CMAKE_CXX_FLAGS_MINSIZEREL
 	)
+
 	foreach(variable ${variables})
 		if(${variable} MATCHES "/MD")
 			string(REGEX REPLACE "/MD" "/MT" ${variable} "${${variable}}")
@@ -311,8 +337,7 @@ else()
 	message(FATAL "Unsupported environment")
 endif()
 
-
-##### show configurations #####
+# #### show configurations #####
 message(STATUS "CMAKE_SYSTEM_NAME = ${CMAKE_SYSTEM_NAME}")
 message(STATUS "CMAKE_C_COMPILER = ${CMAKE_C_COMPILER}")
 message(STATUS "CMAKE_CXX_COMPILER = ${CMAKE_CXX_COMPILER}")
@@ -321,21 +346,20 @@ message(STATUS "CMAKE_CXX_FLAGS = ${CMAKE_CXX_FLAGS}")
 message(STATUS "CMAKE_CXX_FLAGS_DEBUG = ${CMAKE_CXX_FLAGS_DEBUG}")
 message(STATUS "CMAKE_CXX_FLAGS_RELEASE = ${CMAKE_CXX_FLAGS_RELEASE}")
 
-
-##### add make directories #####
+# #### add make directories #####
 add_subdirectory(src)
 
 if(USE_TEST)
 	add_subdirectory(test)
 endif()
+
 if(USE_PYTHON)
 	add_subdirectory(python)
 endif()
 
 add_subdirectory(benchmark)
 
-
-##### custom target #####
+# #### custom target #####
 # testing
 if(USE_TEST)
 	if(USE_GPU)
@@ -378,22 +402,23 @@ add_custom_target(bench
 
 # format
 find_program(CLANG_FORMAT "clang-format")
+
 if(CLANG_FORMAT)
-    file(GLOB_RECURSE ALL_CXX_SOURCE_FILES
-        ${CMAKE_CURRENT_SOURCE_DIR}/benchmark/*.[ch]pp
+	file(GLOB_RECURSE ALL_CXX_SOURCE_FILES
+		${CMAKE_CURRENT_SOURCE_DIR}/benchmark/*.[ch]pp
 		${CMAKE_CURRENT_SOURCE_DIR}/benchmark/*.[ch]
-        ${CMAKE_CURRENT_SOURCE_DIR}/src/*.[ch]pp
-        ${CMAKE_CURRENT_SOURCE_DIR}/src/*.[ch]
-        ${CMAKE_CURRENT_SOURCE_DIR}/test/*.[ch]pp
-        ${CMAKE_CURRENT_SOURCE_DIR}/test/*.[ch]
-    )
-    add_custom_target(
-        format
-        COMMAND clang-format
+		${CMAKE_CURRENT_SOURCE_DIR}/src/*.[ch]pp
+		${CMAKE_CURRENT_SOURCE_DIR}/src/*.[ch]
+		${CMAKE_CURRENT_SOURCE_DIR}/test/*.[ch]pp
+		${CMAKE_CURRENT_SOURCE_DIR}/test/*.[ch]
+	)
+	add_custom_target(
+		format
+		COMMAND clang-format
 		-style=file
-        -i
-        ${ALL_CXX_SOURCE_FILES}
-    )
+		-i
+		${ALL_CXX_SOURCE_FILES}
+	)
 endif()
 
 # shared libs
@@ -414,6 +439,6 @@ if(USE_PYTHON)
 	)
 endif()
 
-#dependency setting for ExternalProject
+# dependency setting for ExternalProject
 add_dependencies(qulacs_core Cereal)
 add_dependencies(qulacs_core eigen)
