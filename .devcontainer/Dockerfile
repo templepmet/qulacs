@@ -24,7 +24,8 @@ RUN apt-get update \
 	libssl-dev \
 	libgsl-dev \
 	libltdl-dev \
-	libboost-dev
+	libboost-dev \
+	clang-format
 ENV CC=gcc
 ENV CXX=g++
 ENV LD_LIBRARY_PATH=/lib/x86_64-linux-gnu:$LD_LIBRARY_PATH
