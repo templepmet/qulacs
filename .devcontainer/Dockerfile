@@ -12,6 +12,7 @@ RUN groupadd --gid $GID $USERNAME \
 	&& echo "$USERNAME ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/$USERNAME \
 	&& chmod 0440 /etc/sudoers.d/$USERNAME
 
+RUN ln -sf /usr/share/zoneinfo/Asia/Tokyo /etc/localtime
 RUN apt-get update \
 	&& apt-get install -y --no-install-recommends \
 	ca-certificates \
@@ -27,22 +28,7 @@ RUN apt-get update \
 ENV CC=gcc
 ENV CXX=g++
 ENV LD_LIBRARY_PATH=/lib/x86_64-linux-gnu:$LD_LIBRARY_PATH
-
-# Install pyenv
-ENV PYTHON_VERSION=3.9.12
-ENV PYENV_ROOT=/opt/pyenv
-ENV PATH=${PYENV_ROOT}/shims:${PYENV_ROOT}/bin:${PATH}
-RUN git clone https://github.com/pyenv/pyenv.git ${PYENV_ROOT} \
-	&& pyenv install -v ${PYTHON_VERSION} \
-	&& pyenv global ${PYTHON_VERSION} \
-	&& pyenv rehash
-RUN chown $USERNAME $PYENV_ROOT/shims
-
-# Install poetry
-ENV POETRY_HOME="/opt/poetry"
-RUN mkdir ${POETRY_HOME}
-RUN chown $USERNAME ${POETRY_HOME}
-RUN curl -sSL https://install.python-poetry.org | POETRY_HOME=${POETRY_HOME} python -
+RUN cd /opt/nvidia/hpc_sdk/Linux_x86_64/22.7/compilers/lib/ && mv libgomp.so.1 libgomp.so.1.bk
 
 # Install cereal
 RUN git clone https://github.com/USCiLab/cereal.git -b v1.3.0 --depth 1 /tmp/cereal \
@@ -71,13 +57,30 @@ RUN git clone https://github.com/linux-test-project/lcov.git -b v1.15 --depth 1 
     && cd - \
     && rm -rf /tmp/lcov
 
-# Settings qulacs
-ENV QULACS_DIR="/workspace/qulacs"
-ENV QULACS_PACKAGE="qulacs"
-ENV QULACS_VERSION="0.5.1"
-ENV USE_GPU="Yes"
-ENV PYTHONPATH="${QULACS_DIR}/dist/${QULACS_PACKAGE}-${QULACS_VERSION}-cp39-cp39-linux_x86_64.whl:${PYTHONPATH}"
-ENV PYTHONPATH="${QULACS_DIR}/build/lib.linux-x86_64-3.9:${PYTHONPATH}"
-
 # Change non-root user
+RUN chown -R $USERNAME /opt
 USER ${USERNAME}
+
+# Install pyenv
+ENV PYTHON_VERSION=3.9.12
+ENV PYENV_ROOT=/opt/pyenv
+ENV PATH=${PYENV_ROOT}/shims:${PYENV_ROOT}/bin:${PATH}
+RUN git clone https://github.com/pyenv/pyenv.git ${PYENV_ROOT} \
+	&& pyenv install -v ${PYTHON_VERSION} \
+	&& pyenv global ${PYTHON_VERSION} \
+	&& pyenv rehash
+RUN pip install -U pip \
+    && pip install black flake8 mypy openfermion pybind11-stubgen setuptools
+
+# Install poetry
+ENV POETRY_HOME="/opt/poetry"
+RUN mkdir ${POETRY_HOME}
+RUN curl -sSL https://install.python-poetry.org | POETRY_HOME=${POETRY_HOME} python -
+
+# Settings qulacs
+ENV PWD="/workspace/qulacs"
+ENV QULACS_PACKAGE="qulacs"
+ENV USE_TEST="Yes"
+ENV USE_GPU="Yes"
+ENV PYTHONPATH="${PWD}/dist:${PYTHONPATH}"
+ENV PYTHONPATH="${PWD}/build:${PYTHONPATH}"
