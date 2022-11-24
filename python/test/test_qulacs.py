@@ -5,6 +5,7 @@ import unittest
 import warnings
 
 import numpy as np
+
 import qulacs
 
 for ind in range(1, len(sys.argv)):
@@ -76,6 +77,7 @@ class TestObservable(unittest.TestCase):
 
     def test_get_matrix(self):
         import numpy as np
+
         from qulacs import Observable
         n_qubits = 3
         obs = Observable(n_qubits)
@@ -159,6 +161,8 @@ class TestPointerHandling(unittest.TestCase):
         func2()
 
     def test_circuit_add_gate(self):
+        from scipy.sparse import lil_matrix
+
         from qulacs import QuantumCircuit, QuantumState
         from qulacs.gate import (CNOT, CPTP, CZ, FREDKIN, P0, P1, RX, RY, RZ,
                                  SWAP, TOFFOLI, U1, U2, U3, Adaptive,
@@ -173,7 +177,6 @@ class TestPointerHandling(unittest.TestCase):
                                  TwoQubitDepolarizingNoise, X, Y, Z, add,
                                  merge, sqrtX, sqrtXdag, sqrtY, sqrtYdag,
                                  to_matrix_gate)
-        from scipy.sparse import lil_matrix
         qc = QuantumCircuit(3)
         qs = QuantumState(3)
         ref = QuantumState(3)
@@ -225,6 +228,8 @@ class TestPointerHandling(unittest.TestCase):
         parametric_gates = None
 
     def test_circuit_add_parametric_gate(self):
+        from scipy.sparse import lil_matrix
+
         from qulacs import ParametricQuantumCircuit, QuantumState
         from qulacs.gate import (CNOT, CPTP, CZ, FREDKIN, P0, P1, RX, RY, RZ,
                                  SWAP, TOFFOLI, U1, U2, U3, Adaptive,
@@ -240,7 +245,6 @@ class TestPointerHandling(unittest.TestCase):
                                  TwoQubitDepolarizingNoise, X, Y, Z, add,
                                  merge, sqrtX, sqrtXdag, sqrtY, sqrtYdag,
                                  to_matrix_gate)
-        from scipy.sparse import lil_matrix
         qc = ParametricQuantumCircuit(3)
         qs = QuantumState(3)
         ref = QuantumState(3)
@@ -380,9 +384,10 @@ class TestPointerHandling(unittest.TestCase):
 
     def test_sparse_matrix(self):
 
+        from scipy.sparse import lil_matrix
+
         from qulacs import QuantumState
         from qulacs.gate import SparseMatrix
-        from scipy.sparse import lil_matrix
         n = 5
         state = QuantumState(n)
         matrix = lil_matrix((4, 4), dtype=np.complex128)
@@ -648,6 +653,7 @@ class TestUtils(unittest.TestCase):
 
     def test_convert_openfermion_op(self):
         from openfermion import QubitOperator
+
         from qulacs.utils import convert_openfermion_op
         openfermion_op = QubitOperator()
         openfermion_op += 1. * QubitOperator("X0")
@@ -911,9 +917,36 @@ class TestNoiseSimulator(unittest.TestCase):
             print("Telemetry Information:")
             print(f"Sampling Result: {high_noise_result}")
             print(f"Heavy Output: {high_noise_heavy_output}")
-        
+
         self.assertGreater(low_noise_prob, 2 / 3)
         self.assertLess(high_noise_prob, 2 / 3)
+
+
+class TestMultipleQuantumCircuitSimulator(unittest.TestCase):
+    def setUp(self):
+        pass
+
+    def tearDown(self):
+        pass
+
+    def test_multiple_update(self):
+        n = 4
+        state1 = qulacs.QuantumState(n)
+        state2 = qulacs.QuantumState(n)
+        circuit = qulacs.QuantumCircuit(n)
+
+        circuit.add_H_gate(0)
+        circuit.add_CNOT_gate(0, 1)
+        state1.set_zero_state()
+        state2.set_zero_state()
+        sim = qulacs.MultipleQuantumCircuitSimulator()
+        sim.addQuantumCircuitState(circuit, state1)
+        sim.addQuantumCircuitState(circuit, state2)
+        sim.simulate()
+        
+        vec1 = state1.get_vector()
+        vec2 = state2.get_vector()
+        self.assertTrue(((vec1 - vec2) < 1e-10).all())
 
 
 if __name__ == "__main__":

@@ -14,6 +14,7 @@
 #include <cppsim/gate_merge.hpp>
 #include <cppsim/gate_to_gqo.hpp>
 #include <cppsim/general_quantum_operator.hpp>
+#include <cppsim/multiple_circuit_simulator.hpp>
 #include <cppsim/noisesimulator.hpp>
 #include <cppsim/observable.hpp>
 #include <cppsim/pauli_operator.hpp>
@@ -1063,11 +1064,11 @@ PYBIND11_MODULE(qulacs_core, m) {
             "Get qubit count")
 
         .def("update_quantum_state",
-            (void (QuantumCircuit::*)(QuantumStateBase*)) &
+            (void(QuantumCircuit::*)(QuantumStateBase*)) &
                 QuantumCircuit::update_quantum_state,
             "Update quantum state", py::arg("state"))
         .def("update_quantum_state",
-            (void (QuantumCircuit::*)(QuantumStateBase*, UINT, UINT)) &
+            (void(QuantumCircuit::*)(QuantumStateBase*, UINT, UINT)) &
                 QuantumCircuit::update_quantum_state,
             py::arg("state"), py::arg("start"), py::arg("end"))
         .def("calculate_depth", &QuantumCircuit::calculate_depth,
@@ -1307,6 +1308,16 @@ PYBIND11_MODULE(qulacs_core, m) {
         .def("swap_state_and_buffer",
             &QuantumCircuitSimulator::swap_state_and_buffer,
             "Swap state and buffer");
+
+    py::class_<MultipleQuantumCircuitSimulator>(
+        m, "MultipleQuantumCircuitSimulator")
+        .def(py::init<>(), "Constructor")
+        .def("addQuantumCircuitState",
+            &MultipleQuantumCircuitSimulator::addQuantumCircuitState,
+            "add QuantumCircuit and QuantumState", py::arg("circuit"),
+            py::arg("state"))
+        .def(
+            "simulate", &MultipleQuantumCircuitSimulator::simulate, "Simulate");
 
     py::class_<CausalConeSimulator>(m, "CausalConeSimulator")
         .def(py::init<ParametricQuantumCircuit&, Observable&>(), "Constructor")

@@ -1,8 +1,11 @@
 """cppsim python interface"""
 from __future__ import annotations
-import qulacs_core
+
 import typing
+
 import numpy
+import qulacs_core
+
 _Shape = typing.Tuple[int, ...]
 
 __all__ = [
@@ -737,6 +740,20 @@ class QuantumCircuitSimulator():
     def swap_state_and_buffer(self) -> None: 
         """
         Swap state and buffer
+        """
+    pass
+class MultipleQuantumCircuitSimulator():
+    def __init__(self) -> None: 
+        """
+        Constructor
+        """
+    def addQuantumCircuitState(self, circuit: QuantumCircuit, state: QuantumStateBase) -> None: 
+        """
+        Add citcuit and state
+        """
+    def simulate(self) -> None: 
+        """
+        Simulate multiple circuit
         """
     pass
 class ClsNoisyEvolution(QuantumGateBase):

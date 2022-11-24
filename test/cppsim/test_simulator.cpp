@@ -2,6 +2,7 @@
 
 #include <cppsim/circuit.hpp>
 #include <cppsim/gate_factory.hpp>
+#include <cppsim/multiple_circuit_simulator.hpp>
 #include <cppsim/simulator.hpp>
 #include <cppsim/state.hpp>
 
@@ -96,4 +97,26 @@ TEST(SimulatorTest, copy_test) {
     ASSERT_EQ(after, after2);
 
     delete state;
+}
+
+TEST(MultipleSimulatorTest, basic_test) {
+    UINT n = 3;
+    Observable observable(n);
+    observable.add_operator(1., "X 0");
+    QuantumState state1(n), state2(n);
+    QuantumCircuit circuit(n);
+    for (UINT i = 0; i < n; ++i) {
+        circuit.add_H_gate(i);
+    }
+    MultipleQuantumCircuitSimulator sim;
+    sim.addQuantumCircuitState(&circuit, &state1);
+    sim.addQuantumCircuitState(&circuit, &state2);
+    sim.simulate();
+
+    int dim = state1.dim;
+    auto data1 = state1.data_cpp();
+    auto data2 = state2.data_cpp();
+    for (ITYPE i = 0; i < dim; ++i) {
+        ASSERT_NEAR(abs(data1[i] - data2[i]), 0, eps);
+    }
 }
