@@ -35,11 +35,11 @@ print(f"{time_naive_gpu=}")
 # enhance cpu&gpu
 sim = MultipleQuantumCircuitSimulator()
 for i in range(m):
-    sim.addQuantumCircuitState(circuit, state)
+    sim.addQuantumCircuitState(circuit, state_gpu)
 
 t = time.time()
 sim.simulate()
-time_enhance = time.time() - t
+time_cpu_gpu_overlap = time.time() - t
 
 # vec0 = state0.get_vector()
 # vec1 = state1.get_vector()
@@ -47,4 +47,4 @@ time_enhance = time.time() - t
 # assert (((vec0 - vec1) < 1e-10).all())
 # assert (((vec0 - vec2) < 1e-10).all())
 
-print(f"{time_enhance=}")
+print(f"{time_cpu_gpu_overlap=}")
