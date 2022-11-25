@@ -222,3 +222,6 @@ dkms.conf
 
 # ignore auto-generated version file
 /pysrc/qulacs/_version.py
+
+# nvidia profiler
+*.nsys-rep
