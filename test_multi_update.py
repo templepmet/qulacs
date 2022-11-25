@@ -1,38 +1,50 @@
 import time
 
 from qulacs import (MultipleQuantumCircuitSimulator, QuantumCircuit,
-                    QuantumState)
+                    QuantumState, QuantumStateGpu)
+
+print("start")
 
 n = 26
-state0 = QuantumState(n)
-state1 = QuantumState(n)
-state2 = QuantumState(n)
+m = 100
 
-circuit1 = QuantumCircuit(n)
-circuit2 = QuantumCircuit(n)
-circuit1.add_H_gate(0)
-circuit1.add_CNOT_gate(0, 1)
-circuit2.add_H_gate(0)
-circuit2.add_CNOT_gate(0, 1)
+state = QuantumState(n)
+circuit = QuantumCircuit(n)
+circuit.add_H_gate(0)
+circuit.add_CNOT_gate(0, 1)
 
+# naive cpu
 t = time.time()
-circuit1.update_quantum_state(state0)
-time_single = time.time() - t
+for i in range(m):
+    state.set_zero_state()
+    circuit.update_quantum_state(state)
+time_naive_cpu = time.time() - t
 
+print(f"{time_naive_cpu=}")
+
+# naive gpu
+state_gpu = QuantumStateGpu(n)
+t = time.time()
+for i in range(m):
+    state_gpu.set_zero_state()
+    circuit.update_quantum_state(state_gpu)
+time_naive_gpu = time.time() - t
+
+print(f"{time_naive_gpu=}")
+
+# enhance cpu&gpu
 sim = MultipleQuantumCircuitSimulator()
-sim.addQuantumCircuitState(circuit1, state1)
-sim.addQuantumCircuitState(circuit2, state2)
+for i in range(m):
+    sim.addQuantumCircuitState(circuit, state)
 
 t = time.time()
 sim.simulate()
-time_multi = time.time() - t
-time_per = time_multi / 2
+time_enhance = time.time() - t
 
-vec0 = state0.get_vector()
-vec1 = state1.get_vector()
-vec2 = state2.get_vector()
-assert (((vec0 - vec1) < 1e-10).all())
-assert (((vec0 - vec2) < 1e-10).all())
+# vec0 = state0.get_vector()
+# vec1 = state1.get_vector()
+# vec2 = state2.get_vector()
+# assert (((vec0 - vec1) < 1e-10).all())
+# assert (((vec0 - vec2) < 1e-10).all())
 
-print(f"{time_single=}")
-print(f"{time_per=}, {time_multi=}")
+print(f"{time_enhance=}")
