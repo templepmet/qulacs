@@ -36,3 +36,4 @@ assert (((vec0 - vec2) < 1e-10).all())
 
 print(f"{time_single=}")
 print(f"{time_per=}, {time_multi=}")
+
