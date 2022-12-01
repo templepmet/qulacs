@@ -100,23 +100,36 @@ TEST(SimulatorTest, copy_test) {
 }
 
 TEST(MultipleSimulatorTest, basic_test) {
-    UINT n = 3;
-    Observable observable(n);
-    observable.add_operator(1., "X 0");
-    QuantumState state1(n), state2(n);
-    QuantumCircuit circuit(n);
-    for (UINT i = 0; i < n; ++i) {
+    int n_state = 4;
+    UINT qubits = 3;
+    QuantumCircuit circuit(qubits);
+    for (UINT i = 0; i < qubits; ++i) {
         circuit.add_H_gate(i);
     }
     MultipleQuantumCircuitSimulator sim;
-    sim.addQuantumCircuitState(&circuit, &state1);
-    sim.addQuantumCircuitState(&circuit, &state2);
+    for (int i = 0; i < n_state; ++i) {
+        sim.addQuantumCircuitState(&circuit, qubits);
+    }
     sim.simulate();
+    std::vector<QuantumStateBase*> state_list = sim.get_state_list();
 
-    int dim = state1.dim;
-    auto data1 = state1.data_cpp();
-    auto data2 = state2.data_cpp();
-    for (ITYPE i = 0; i < dim; ++i) {
-        ASSERT_NEAR(abs(data1[i] - data2[i]), 0, eps);
+    std::vector<CPPCTYPE*> vec;
+    for (QuantumStateBase* state : state_list) {
+        CPPCTYPE* cpp;
+        if (state->get_device_name() == "gpu") {
+            cpp = state->duplicate_data_cpp();
+        } else {
+            cpp = state->data_cpp();
+        }
+        vec.push_back(cpp);
+    }
+
+    int dim = state_list[0]->dim;
+    for (int i = 1; i < n_state; ++i) {
+        int d = state_list[i]->dim;
+        ASSERT_EQ(d, dim);
+        for (ITYPE j = 0; j < dim; ++j) {
+            ASSERT_TRUE(abs(vec[i][j] - vec[0][j]) < eps);
+        }
     }
 }

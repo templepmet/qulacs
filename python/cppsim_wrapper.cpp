@@ -1313,11 +1313,18 @@ PYBIND11_MODULE(qulacs_core, m) {
         m, "MultipleQuantumCircuitSimulator")
         .def(py::init<>(), "Constructor")
         .def("addQuantumCircuitState",
-            &MultipleQuantumCircuitSimulator::addQuantumCircuitState,
-            "add QuantumCircuit and QuantumState", py::arg("circuit"),
-            py::arg("state"))
-        .def(
-            "simulate", &MultipleQuantumCircuitSimulator::simulate, "Simulate");
+            py::overload_cast<QuantumCircuit*, UINT>(
+                &MultipleQuantumCircuitSimulator::addQuantumCircuitState),
+            "add QuantumCircuit and qubits of QuantumState", py::arg("circuit"),
+            py::arg("qubits"))
+        .def("addQuantumCircuitState",
+            py::overload_cast<QuantumCircuit*, UINT, ITYPE>(
+                &MultipleQuantumCircuitSimulator::addQuantumCircuitState),
+            "add QuantumCircuit and (qubits, basis) of QuantumState",
+            py::arg("circuit"), py::arg("qubits"), py::arg("basis"))
+        .def("simulate", &MultipleQuantumCircuitSimulator::simulate, "Simulate")
+        .def("get_state_list", &MultipleQuantumCircuitSimulator::get_state_list,
+            "Get QuantumState list");
 
     py::class_<CausalConeSimulator>(m, "CausalConeSimulator")
         .def(py::init<ParametricQuantumCircuit&, Observable&>(), "Constructor")

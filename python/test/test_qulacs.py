@@ -930,23 +930,23 @@ class TestMultipleQuantumCircuitSimulator(unittest.TestCase):
         pass
 
     def test_multiple_update(self):
-        n = 4
-        state1 = qulacs.QuantumState(n)
-        state2 = qulacs.QuantumState(n)
-        circuit = qulacs.QuantumCircuit(n)
-
+        n_state = 4
+        qubits = 4
+        circuit = qulacs.QuantumCircuit(qubits)
         circuit.add_H_gate(0)
         circuit.add_CNOT_gate(0, 1)
-        state1.set_zero_state()
-        state2.set_zero_state()
+
         sim = qulacs.MultipleQuantumCircuitSimulator()
-        sim.addQuantumCircuitState(circuit, state1)
-        sim.addQuantumCircuitState(circuit, state2)
+        for i in range(n_state):
+            sim.addQuantumCircuitState(circuit, qubits)        
         sim.simulate()
-        
-        vec1 = state1.get_vector()
-        vec2 = state2.get_vector()
-        self.assertTrue(((vec1 - vec2) < 1e-10).all())
+        state_list = sim.get_state_list()
+        self.assertTrue(len(state_list), n_state)
+
+        ref = state_list[0].get_vector()
+        for i in range(1, qubits):
+            vec = state_list[i].get_vector()
+            self.assertTrue(((vec - ref) < 1e-10).all())
 
 
 if __name__ == "__main__":

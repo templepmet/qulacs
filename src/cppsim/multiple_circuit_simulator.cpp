@@ -1,6 +1,5 @@
 #include "multiple_circuit_simulator.hpp"
 
-#include <nvtx3/nvToolsExt.h>
 #include <omp.h>
 
 #include <cstdio>
@@ -10,12 +9,23 @@
 
 MultipleQuantumCircuitSimulator::MultipleQuantumCircuitSimulator() {}
 
-MultipleQuantumCircuitSimulator::~MultipleQuantumCircuitSimulator() {}
+MultipleQuantumCircuitSimulator::~MultipleQuantumCircuitSimulator() {
+    // for (QuantumStateBase* state : _state_list) {
+    //     delete state;
+    // }
+}
 
 void MultipleQuantumCircuitSimulator::addQuantumCircuitState(
-    QuantumCircuit* circuit, QuantumStateBase* state) {
-    _circuit_vector.push_back(circuit);
-    _state_vector.push_back(state);
+    QuantumCircuit* circuit, UINT qubits) {
+    this->addQuantumCircuitState(circuit, qubits, 0);
+}
+
+void MultipleQuantumCircuitSimulator::addQuantumCircuitState(
+    QuantumCircuit* circuit, UINT qubits, ITYPE basis) {
+    _circuit_list.push_back(circuit);
+    _state_list.push_back(nullptr);
+    _qubits_list.push_back(qubits);
+    _basis_list.push_back(basis);
 }
 
 void MultipleQuantumCircuitSimulator::simulate() {
@@ -24,33 +34,37 @@ void MultipleQuantumCircuitSimulator::simulate() {
     omp_set_nested(1);
     omp_set_num_threads(2);
 #pragma omp parallel for schedule(dynamic)
-    for (int i = 0; i < _circuit_vector.size(); ++i) {
+    for (int i = 0; i < _circuit_list.size(); ++i) {
         int tid = omp_get_thread_num();
         if (tid == 0) {  // 2 thread for gpu
             omp_set_num_threads(2);
-            if (_state_vector[i]->get_device_name() == "gpu") {
-                _circuit_vector[i]->update_quantum_state(_state_vector[i]);
-            } else {  // cpu -> gpu data transfer
-                QuantumStateGpu* state_gpu;
-                state_gpu->load(_state_vector[i]);
-                _circuit_vector[i]->update_quantum_state(state_gpu);
-                _state_vector[i]->load(state_gpu);
-                delete state_gpu;
+            if (_state_list[i] != nullptr) {
+                delete _state_list[i];
             }
+            QuantumStateGpu* state_gpu = new QuantumStateGpu(_qubits_list[i]);
+            if (_basis_list[i] > 0) {
+                state_gpu->set_computational_basis(_basis_list[i]);
+            }
+            _circuit_list[i]->update_quantum_state(state_gpu);
+            _state_list[i] = state_gpu;
         } else {  // other thread for cpu
             omp_set_num_threads(max_threads - 2);
-            if (_state_vector[i]->get_device_name() ==
-                "gpu") {  // gpu -> cpu data transfer
-                QuantumState* state_cpu;
-                state_cpu->load(_state_vector[i]);
-                _circuit_vector[i]->update_quantum_state(state_cpu);
-                _state_vector[i]->load(state_cpu);
-                delete state_cpu;
-            } else {
-                _circuit_vector[i]->update_quantum_state(_state_vector[i]);
+            if (_state_list[i] != nullptr) {
+                delete _state_list[i];
             }
+            QuantumStateCpu* state_cpu = new QuantumStateCpu(_qubits_list[i]);
+            if (_basis_list[i] > 0) {
+                state_cpu->set_computational_basis(_basis_list[i]);
+            }
+            _circuit_list[i]->update_quantum_state(state_cpu);
+            _state_list[i] = state_cpu;
         }
     }
     omp_set_num_threads(max_threads);
     omp_set_nested(0);
+}
+
+std::vector<QuantumStateBase*>
+MultipleQuantumCircuitSimulator::get_state_list() {
+    return _state_list;
 }

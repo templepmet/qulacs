@@ -747,13 +747,23 @@ class MultipleQuantumCircuitSimulator():
         """
         Constructor
         """
-    def addQuantumCircuitState(self, circuit: QuantumCircuit, state: QuantumStateBase) -> None: 
+    @typing.overload
+    def addQuantumCircuitState(self, circuit: QuantumCircuit, qubits: int) -> None: 
+        """
+        Add citcuit and state
+        """
+    @typing.overload
+    def addQuantumCircuitState(self, circuit: QuantumCircuit, qubits: int, comp_basis: int) -> None: 
         """
         Add citcuit and state
         """
     def simulate(self) -> None: 
         """
         Simulate multiple circuit
+        """
+    def get_state_list(self) -> typing.List[QuantumStateBase]: 
+        """
+        Get QuantumState List
         """
     pass
 class ClsNoisyEvolution(QuantumGateBase):
