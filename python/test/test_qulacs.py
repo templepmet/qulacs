@@ -938,7 +938,7 @@ class TestMultipleQuantumCircuitSimulator(unittest.TestCase):
 
         sim = qulacs.MultipleQuantumCircuitSimulator()
         for i in range(n_state):
-            sim.addQuantumCircuitState(circuit, qubits)        
+            sim.addQuantumCircuit(circuit)
         sim.simulate()
         state_list = sim.get_state_list()
         self.assertTrue(len(state_list), n_state)

@@ -748,12 +748,12 @@ class MultipleQuantumCircuitSimulator():
         Constructor
         """
     @typing.overload
-    def addQuantumCircuitState(self, circuit: QuantumCircuit, qubits: int) -> None: 
+    def addQuantumCircuit(self, circuit: QuantumCircuit) -> None: 
         """
-        Add citcuit and state
+        Add citcuit
         """
     @typing.overload
-    def addQuantumCircuitState(self, circuit: QuantumCircuit, qubits: int, comp_basis: int) -> None: 
+    def addQuantumCircuitState(self, circuit: QuantumCircuit, comp_basis: int) -> None: 
         """
         Add citcuit and state
         """

@@ -108,7 +108,7 @@ TEST(MultipleSimulatorTest, basic_test) {
     }
     MultipleQuantumCircuitSimulator sim;
     for (int i = 0; i < n_state; ++i) {
-        sim.addQuantumCircuitState(&circuit, qubits);
+        sim.addQuantumCircuit(&circuit);
     }
     sim.simulate();
     std::vector<QuantumStateBase*> state_list = sim.get_state_list();

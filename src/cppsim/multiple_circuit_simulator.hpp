@@ -8,7 +8,6 @@ class DllExport MultipleQuantumCircuitSimulator {
 private:
     std::vector<QuantumCircuit*> _circuit_list;
     std::vector<QuantumStateBase*> _state_list;
-    std::vector<UINT> _qubits_list;
     std::vector<ITYPE> _basis_list;
 
 public:
@@ -16,10 +15,9 @@ public:
 
     ~MultipleQuantumCircuitSimulator();
 
-    void addQuantumCircuitState(QuantumCircuit* circuit, UINT qubits);
+    void addQuantumCircuit(QuantumCircuit* circuit);
 
-    void addQuantumCircuitState(
-        QuantumCircuit* circuit, UINT qubits, ITYPE comp_basis);
+    void addQuantumCircuitState(QuantumCircuit* circuit, ITYPE comp_basis);
 
     void simulate();
 

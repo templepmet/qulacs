@@ -1312,16 +1312,13 @@ PYBIND11_MODULE(qulacs_core, m) {
     py::class_<MultipleQuantumCircuitSimulator>(
         m, "MultipleQuantumCircuitSimulator")
         .def(py::init<>(), "Constructor")
+        .def("addQuantumCircuit",
+            &MultipleQuantumCircuitSimulator::addQuantumCircuit,
+            "add QuantumCircuit and qubits of QuantumState", py::arg("circuit"))
         .def("addQuantumCircuitState",
-            py::overload_cast<QuantumCircuit*, UINT>(
-                &MultipleQuantumCircuitSimulator::addQuantumCircuitState),
-            "add QuantumCircuit and qubits of QuantumState", py::arg("circuit"),
-            py::arg("qubits"))
-        .def("addQuantumCircuitState",
-            py::overload_cast<QuantumCircuit*, UINT, ITYPE>(
-                &MultipleQuantumCircuitSimulator::addQuantumCircuitState),
-            "add QuantumCircuit and (qubits, basis) of QuantumState",
-            py::arg("circuit"), py::arg("qubits"), py::arg("basis"))
+            &MultipleQuantumCircuitSimulator::addQuantumCircuitState,
+            "add QuantumCircuit and basis of QuantumState", py::arg("circuit"),
+            py::arg("basis"))
         .def("simulate", &MultipleQuantumCircuitSimulator::simulate, "Simulate")
         .def("get_state_list", &MultipleQuantumCircuitSimulator::get_state_list,
             "Get QuantumState list");
